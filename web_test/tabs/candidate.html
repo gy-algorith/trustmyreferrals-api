@@ -1,0 +1,48 @@
+<div class="container">
+    <h2>Candidate Register</h2>
+    
+    <!-- Email Verification Section -->
+    <div class="verification-section">
+        <h3>Step 1: Email Verification</h3>
+        <div class="form-group">
+            <label for="canEmail">Email:</label>
+            <input type="email" id="canEmail" placeholder="Enter email">
+        </div>
+        <button onclick="sendCandidateVerification()">Send Verification Code</button>
+        <div id="canVerificationStatus" class="verification-status verification-pending" style="display: none;">
+            Verification pending...
+        </div>
+        
+        <div id="canVerificationForm" style="display: none;">
+            <div class="form-group">
+                <label for="canVerificationCode">Verification Code (6 digits):</label>
+                <input type="text" id="canVerificationCode" placeholder="Enter 6-digit code" maxlength="6">
+            </div>
+            <button onclick="verifyCandidateEmail()">Verify Email</button>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div id="canRegistrationForm" style="display: none;">
+        <h3>Step 2: Complete Registration</h3>
+        <div class="form-group">
+            <label for="canFirstName">First Name:</label>
+            <input type="text" id="canFirstName" placeholder="Enter first name">
+        </div>
+        <div class="form-group">
+            <label for="canLastName">Last Name:</label>
+            <input type="text" id="canLastName" placeholder="Enter last name">
+        </div>
+        <div class="form-group">
+            <label for="canPassword">Password:</label>
+            <input type="password" id="canPassword" placeholder="Enter password (min 8 chars)">
+        </div>
+        <div class="form-group">
+            <label for="referredBy">Referred By (UUID):</label>
+            <input type="text" id="referredBy" placeholder="Enter referrer UUID">
+        </div>
+        <button onclick="registerCandidate()">Register Candidate</button>
+    </div>
+
+    <div id="candidateResponse" class="response" style="display: none;"></div>
+</div>

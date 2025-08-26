@@ -1,0 +1,57 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+.taskmasterconfig
+.windsurfrules
+
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.pem
+*.sw?
+
+# OS specific
+.DS_Store
+
+# Task files
+tasks.json
+tasks/ 
+
+# Generated files
+*.tar.gz
+dist/
+dist/**/* */
+cookies.txt
+user-data.sh
+
+# Scripts and PRD files
+scripts/prd.txt
+scripts/refactoring_prd.txt
+scripts/create-db.js
+
+memory.md
+test-stripe-flow.html
+
+
+.curosr/**/*
+.curosr/
+.roomodes/
+.roo/
+.taskmaster/
+
+deploy.sh
+quick-deploy.sh

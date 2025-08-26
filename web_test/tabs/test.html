@@ -1,0 +1,32 @@
+<!-- Current Token Display -->
+<div class="container" id="tokenContainer" style="display: none;">
+    <h2>Current Token</h2>
+    <div id="tokenDisplay" class="token-display"></div>
+    <button onclick="clearToken()">Clear Token</button>
+</div>
+
+<!-- Protected Route Test -->
+<div class="container" id="protectedContainer" style="display: none;">
+    <h2>Protected Route Test</h2>
+    <button onclick="testProtectedRoute()">Test /auth/me</button>
+    <div id="protectedResponse" class="response" style="display: none;"></div>
+</div>
+
+<!-- Referral Link Test -->
+<div class="container" id="referralLinkContainer" style="display: none;">
+    <h2>Referral Link Test</h2>
+    <p><strong>Note:</strong> This API is only available for authenticated referrers.</p>
+    <button onclick="generateReferralLink()">Generate Referral Link</button>
+    <div id="referralLinkResponse" class="response" style="display: none;"></div>
+</div>
+
+<!-- Email Verification Test -->
+<div class="container" id="verificationContainer" style="display: none;">
+    <h2>Email Verification Test</h2>
+    <div class="form-group">
+        <label for="verificationEmail">Email:</label>
+        <input type="email" id="verificationEmail" placeholder="Enter email for verification">
+    </div>
+    <button onclick="sendVerificationEmail()">Send Verification Email</button>
+    <div id="verificationResponse" class="response" style="display: none;"></div>
+</div>

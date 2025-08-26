@@ -1,0 +1,223 @@
+<div class="container">
+    <h2>Requirements API Test</h2>
+    <p>Create, search, and manage job requirements.</p>
+
+    <!-- Create Requirement -->
+    <div class="verification-section">
+        <h3>Create Job Requirement</h3>
+        <p>Create a new job requirement (Referrer Only).</p>
+        
+        <div class="form-group">
+            <label for="requirementTitle">Title:</label>
+            <input type="text" id="requirementTitle" placeholder="e.g., Senior Frontend Developer">
+        </div>
+        <div class="form-group">
+            <label for="requirementDescription">Description:</label>
+            <textarea id="requirementDescription" placeholder="Detailed job description..." rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="requirementRequirements">Requirements:</label>
+            <textarea id="requirementRequirements" placeholder="Required skills and experience..." rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="requirementLocation">Location:</label>
+            <input type="text" id="requirementLocation" placeholder="e.g., Remote, New York, London">
+        </div>
+        <div class="form-group">
+            <label for="requirementSalary">Salary Range:</label>
+            <input type="text" id="requirementSalary" placeholder="e.g., $80,000 - $120,000">
+        </div>
+        <div class="form-group">
+            <label for="requirementType">Job Type:</label>
+            <select id="requirementType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="contract">Contract</option>
+                <option value="freelance">Freelance</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="requirementExperience">Experience Level:</label>
+            <select id="requirementExperience" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                <option value="entry">Entry Level</option>
+                <option value="mid">Mid Level</option>
+                <option value="senior">Senior Level</option>
+                <option value="lead">Lead/Manager</option>
+            </select>
+        </div>
+        
+        <button onclick="createRequirement()">Create Requirement</button>
+        <div id="createRequirementResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Search Requirements -->
+    <div class="verification-section">
+        <h3>Search Requirements</h3>
+        <p>Search for open job requirements.</p>
+        
+        <div class="form-group">
+            <label for="searchTitle">Title (Optional):</label>
+            <input type="text" id="searchTitle" placeholder="Search by title">
+        </div>
+        <div class="form-group">
+            <label for="searchLocation">Location (Optional):</label>
+            <input type="text" id="searchLocation" placeholder="Search by location">
+        </div>
+        <div class="form-group">
+            <label for="searchType">Job Type (Optional):</label>
+            <select id="searchType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                <option value="">All Types</option>
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="contract">Contract</option>
+                <option value="freelance">Freelance</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="searchExperience">Experience Level (Optional):</label>
+            <select id="searchExperience" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                <option value="">All Levels</option>
+                <option value="entry">Entry Level</option>
+                <option value="mid">Mid Level</option>
+                <option value="senior">Senior Level</option>
+                <option value="lead">Lead/Manager</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="searchLimit">Limit:</label>
+            <input type="number" id="searchLimit" value="10" min="1" max="100">
+        </div>
+        <div class="form-group">
+            <label for="searchOffset">Offset:</label>
+            <input type="number" id="searchOffset" value="0" min="0">
+        </div>
+        
+        <button onclick="searchRequirements()">Search Requirements</button>
+        <div id="searchRequirementsResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Get My Requirements -->
+    <div class="verification-section">
+        <h3>Get My Requirements</h3>
+        <p>View all requirements you created with response statistics (Referrer Only).</p>
+        
+        <button onclick="getMyRequirements()">Get My Requirements</button>
+        <div id="getMyRequirementsResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Get Requirement Details -->
+    <div class="verification-section">
+        <h3>Get Requirement Details</h3>
+        <p>Get detailed information about a specific requirement.</p>
+        
+        <div class="form-group">
+            <label for="requirementId">Requirement ID:</label>
+            <input type="text" id="requirementId" placeholder="Enter requirement UUID">
+        </div>
+        
+        <button onclick="getRequirementDetails()">Get Details</button>
+        <div id="getRequirementDetailsResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Respond to Requirement -->
+    <div class="verification-section">
+        <h3>Respond to Requirement</h3>
+        <p>Propose a candidate from your deck to a requirement (Referrer Only).</p>
+        
+        <div class="form-group">
+            <label for="respondRequirementId">Requirement ID:</label>
+            <input type="text" id="respondRequirementId" placeholder="Enter requirement UUID">
+        </div>
+        <div class="form-group">
+            <label for="respondCandidateId">Candidate ID:</label>
+            <input type="text" id="respondCandidateId" placeholder="Enter candidate UUID from your deck">
+        </div>
+        <div class="form-group">
+            <label for="respondMessage">Message:</label>
+            <textarea id="respondMessage" placeholder="Why this candidate is a good fit..." rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="respondPrice">Price (cents):</label>
+            <input type="number" id="respondPrice" placeholder="5000 = $50.00" min="100">
+        </div>
+        
+        <button onclick="respondToRequirement()">Submit Response</button>
+        <div id="respondToRequirementResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Get Requirement Responses -->
+    <div class="verification-section">
+        <h3>Get Requirement Responses</h3>
+        <p>View all responses for a specific requirement (Referrer Only).</p>
+        
+        <div class="form-group">
+            <label for="responsesRequirementId">Requirement ID:</label>
+            <input type="text" id="responsesRequirementId" placeholder="Enter requirement UUID">
+        </div>
+        <div class="form-group">
+            <label for="responsesPage">Page:</label>
+            <input type="number" id="responsesPage" value="1" min="1">
+        </div>
+        <div class="form-group">
+            <label for="responsesLimit">Limit:</label>
+            <input type="number" id="responsesLimit" value="10" min="1" max="100">
+        </div>
+        
+        <button onclick="getRequirementResponses()">Get Responses</button>
+        <div id="getRequirementResponsesResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Approve Response -->
+    <div class="verification-section">
+        <h3>Approve Response</h3>
+        <p>Approve a candidate response and deduct balance (Referrer Only).</p>
+        
+        <div class="form-group">
+            <label for="approveRequirementId">Requirement ID:</label>
+            <input type="text" id="approveRequirementId" placeholder="Enter requirement UUID">
+        </div>
+        <div class="form-group">
+            <label for="approveResponseId">Response ID:</label>
+            <input type="text" id="approveResponseId" placeholder="Enter response UUID">
+        </div>
+        
+        <button onclick="approveResponse()" style="background-color: #28a745;">Approve Response</button>
+        <div id="approveResponseResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Reject Response -->
+    <div class="verification-section">
+        <h3>Reject Response</h3>
+        <p>Reject a candidate response (Referrer Only).</p>
+        
+        <div class="form-group">
+            <label for="rejectRequirementId">Requirement ID:</label>
+            <input type="text" id="rejectRequirementId" placeholder="Enter requirement UUID">
+        </div>
+        <div class="form-group">
+            <label for="rejectResponseId">Response ID:</label>
+            <input type="text" id="rejectResponseId" placeholder="Enter response UUID">
+        </div>
+        
+        <button onclick="rejectResponse()" style="background-color: #dc3545;">Reject Response</button>
+        <div id="rejectResponseResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Report Requirement -->
+    <div class="verification-section">
+        <h3>Report Requirement</h3>
+        <p>Report a questionable job requirement (Referrer Only).</p>
+        
+        <div class="form-group">
+            <label for="reportRequirementId">Requirement ID:</label>
+            <input type="text" id="reportRequirementId" placeholder="Enter requirement UUID">
+        </div>
+        <div class="form-group">
+            <label for="reportReason">Reason:</label>
+            <textarea id="reportReason" placeholder="Why are you reporting this requirement?" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+        </div>
+        
+        <button onclick="reportRequirement()" style="background-color: #ffc107;">Report Requirement</button>
+        <div id="reportRequirementResponse" class="response" style="display: none;"></div>
+    </div>
+</div>

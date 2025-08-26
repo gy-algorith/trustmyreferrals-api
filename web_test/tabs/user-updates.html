@@ -1,0 +1,59 @@
+<div class="container">
+    <h2>User Updates API Test</h2>
+    
+    <!-- Create Post (Candidate Only) -->
+    <div class="verification-section">
+        <h3>Create Post (Candidate Only)</h3>
+        <div class="form-group">
+            <label for="postDescription">Post Description:</label>
+            <textarea id="postDescription" placeholder="Enter post description (max 1000 chars)" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+        </div>
+        <button onclick="createPost()">Create Post</button>
+        <div id="createPostResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Get My Updates (Candidate Only) -->
+    <div class="verification-section">
+        <h3>Get My Updates (Candidate Only)</h3>
+        <div class="form-group">
+            <label for="myUpdatesLimit">Limit:</label>
+            <input type="number" id="myUpdatesLimit" placeholder="20" value="20" min="1" max="100">
+        </div>
+        <div class="form-group">
+            <label for="myUpdatesPage">Page:</label>
+            <input type="number" id="myUpdatesPage" placeholder="1" value="1" min="1">
+        </div>
+        <button onclick="getMyUpdates()">Get My Updates</button>
+        <div id="myUpdatesResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Get Referrer Updates (Referrer Only) -->
+    <div class="verification-section">
+        <h3>Get Referrer Updates (Referrer Only)</h3>
+        <div class="form-group">
+            <label for="referrerUpdatesLimit">Limit:</label>
+            <input type="number" id="referrerUpdatesLimit" placeholder="20" value="20" min="1" max="100">
+        </div>
+        <div class="form-group">
+            <label for="referrerUpdatesPage">Page:</label>
+            <input type="number" id="referrerUpdatesPage" placeholder="1" value="1" min="1">
+        </div>
+        <button onclick="getReferrerUpdates()">Get Referrer Updates</button>
+        <div id="referrerUpdatesResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Update Post (Candidate Only) -->
+    <div class="verification-section">
+        <h3>Update Post (Candidate Only)</h3>
+        <div class="form-group">
+            <label for="updatePostId">Post ID (UUID):</label>
+            <input type="text" id="updatePostId" placeholder="Enter post UUID to update">
+        </div>
+        <div class="form-group">
+            <label for="updatePostDescription">New Description:</label>
+            <textarea id="updatePostDescription" placeholder="Enter new description (max 1000 chars)" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+        </div>
+        <button onclick="updatePost()">Update Post</button>
+        <div id="updatePostResponse" class="response" style="display: none;"></div>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+<div class="container">
+    <h2>Resume API Test</h2>
+    
+    <!-- Resume Sections Management -->
+    <div class="verification-section">
+        <h3>Resume Sections Management</h3>
+        
+        <!-- Professional Summary -->
+        <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+            <h4>Professional Summary</h4>
+            <div class="form-group">
+                <label for="summaryText">Summary:</label>
+                <textarea id="summaryText" placeholder="Enter professional summary" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+            </div>
+            <button onclick="createProfessionalSummary()">Create Summary</button>
+            <button onclick="updateProfessionalSummary()">Update Summary</button>
+            <div id="summaryResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Work Experience -->
+        <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+            <h4>Work Experience</h4>
+            <div class="form-group">
+                <label for="workTitle">Job Title:</label>
+                <input type="text" id="workTitle" placeholder="Enter job title">
+            </div>
+            <div class="form-group">
+                <label for="workCompany">Company:</label>
+                <input type="text" id="workCompany" placeholder="Enter company name">
+            </div>
+            <div class="form-group">
+                <label for="workDateRange">Date Range:</label>
+                <input type="text" id="workDateRange" placeholder="e.g., 2020-2023">
+            </div>
+            <div class="form-group">
+                <label for="workDescription">Description:</label>
+                <textarea id="workDescription" placeholder="Enter work description" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+            </div>
+            <button onclick="createWorkExperience()">Add Work Experience</button>
+            <div id="workExperienceResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Skills -->
+        <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+            <h4>Skills</h4>
+            <div class="form-group">
+                <label for="skillName">Skill Name:</label>
+                <input type="text" id="skillName" placeholder="Enter skill name">
+            </div>
+            <button onclick="addResumeSkill()">Add Skill</button>
+            <div id="skillResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Resume Operations -->
+    <div class="verification-section">
+        <h3>Resume Operations</h3>
+        
+        <!-- Get Resume Sections -->
+        <button onclick="getMyResumeSections()">Get My Resume Sections</button>
+        <div id="resumeSectionsResponse" class="response" style="display: none;"></div>
+
+        <!-- Get Complete Resume -->
+        <button onclick="getMyCompleteResume()">Get My Complete Resume</button>
+        <div id="completeResumeResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- PDF Resume Parsing -->
+    <div class="verification-section">
+        <h3>PDF Resume Parsing (AI-Powered)</h3>
+        <p>Upload a PDF resume file to automatically create resume sections using AI.</p>
+        
+        <!-- File Upload -->
+        <div class="form-group">
+            <label for="pdfFile">PDF Resume File:</label>
+            <input type="file" id="pdfFile" accept=".pdf" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+            <small style="color: #666;">Maximum file size: 10MB. Only PDF files are allowed.</small>
+        </div>
+        
+        <button onclick="parsePdfResume()">Parse PDF & Create Sections</button>
+        <div id="pdfParseResponse" class="response" style="display: none;"></div>
+    </div>
+</div>

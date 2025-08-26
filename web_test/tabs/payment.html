@@ -1,0 +1,98 @@
+<div class="container">
+    <h2>Payment Management (Referrer Only)</h2>
+    <p>Manage Stripe Connect account, add funds, check balance, and withdraw earnings.</p>
+
+    <!-- Stripe Connect Onboarding -->
+    <div class="verification-section">
+        <h3>Stripe Connect Onboarding</h3>
+        <p>Create Stripe Connect onboarding link to receive payments.</p>
+        
+        <button onclick="createConnectLink()">Create Connect Link</button>
+        <div id="connectLinkResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Add Funds -->
+    <div class="verification-section">
+        <h3>Add Funds to Account</h3>
+        <p>Add funds to your account for future payments (amount in cents).</p>
+        
+        <div class="form-group">
+            <label for="addFundAmount">Amount (cents):</label>
+            <input type="number" id="addFundAmount" value="1000" min="100" placeholder="1000 = $10.00">
+        </div>
+        <div class="form-group">
+            <label for="addFundCurrency">Currency:</label>
+            <select id="addFundCurrency" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                <option value="usd">USD</option>
+                <option value="eur">EUR</option>
+                <option value="jpy">JPY</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="addFundDescription">Description (Optional):</label>
+            <input type="text" id="addFundDescription" placeholder="e.g., Add fund for project payments">
+        </div>
+        <div class="form-group">
+            <label for="addFundSuccessUrl">Success URL:</label>
+            <input type="url" id="addFundSuccessUrl" value="http://localhost:3000/payment/success" placeholder="URL to redirect after successful payment">
+            <small style="color: #666;">Allowed domains: localhost:3000, 3.80.115.250:3000, 18.208.163.97:3000</small>
+        </div>
+        <div class="form-group">
+            <label for="addFundCancelUrl">Cancel URL:</label>
+            <input type="url" id="addFundCancelUrl" value="http://localhost:3000/payment/cancel" placeholder="URL to redirect after cancelled payment">
+            <small style="color: #666;">Allowed domains: localhost:3000, 3.80.115.250:3000, 18.208.163.97:3000</small>
+        </div>
+        
+        <button onclick="addFund()">Add Funds</button>
+        <div id="addFundResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Check Balance -->
+    <div class="verification-section">
+        <h3>Check Account Balance</h3>
+        <p>View your current account balance in cents and dollars.</p>
+        
+        <button onclick="checkBalance()">Check Balance</button>
+        <div id="balanceResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Withdraw Funds -->
+    <div class="verification-section">
+        <h3>Withdraw Funds</h3>
+        <p>Withdraw funds from your account to your bank account. Processing fee will be applied.</p>
+        
+        <div class="form-group">
+            <label for="withdrawAmount">Amount (cents):</label>
+            <input type="number" id="withdrawAmount" value="500" min="100" placeholder="500 = $5.00">
+        </div>
+        <div class="form-group">
+            <label for="withdrawCurrency">Currency:</label>
+            <select id="withdrawCurrency" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                <option value="usd">USD</option>
+                <option value="eur">EUR</option>
+                <option value="jpy">JPY</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="withdrawDescription">Description (Optional):</label>
+            <input type="text" id="withdrawDescription" placeholder="e.g., Withdraw earnings">
+        </div>
+        
+        <button onclick="withdrawFunds()">Withdraw Funds</button>
+        <div id="withdrawResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Payment Status Check -->
+    <div class="verification-section">
+        <h3>Check Payment Status</h3>
+        <p>Check the status of a specific payment transaction.</p>
+        
+        <div class="form-group">
+            <label for="paymentId">Payment ID:</label>
+            <input type="text" id="paymentId" placeholder="Enter payment transaction ID">
+        </div>
+        
+        <button onclick="checkPaymentStatus()">Check Payment Status</button>
+        <div id="paymentStatusResponse" class="response" style="display: none;"></div>
+    </div>
+</div>

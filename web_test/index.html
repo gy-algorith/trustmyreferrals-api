@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth API Test</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Auth API Test Page</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+        <button class="tab-button active" onclick="showTab('referrer')">Referrer Register</button>
+        <button class="tab-button" onclick="showTab('candidate')">Candidate Register</button>
+        <button class="tab-button" onclick="showTab('login')">Login</button>
+        <button class="tab-button" onclick="showTab('password')">Password Reset</button>
+        <button class="tab-button" onclick="showTab('user-updates')">User Updates</button>
+        <button class="tab-button" onclick="showTab('resume')">Resume</button>
+        <button class="tab-button" onclick="showTab('deck')">Deck</button>
+        <button class="tab-button" onclick="showTab('requirements')">Requirements</button>
+        <button class="tab-button" onclick="showTab('candidate-interest')">Candidate Interest</button>
+        <button class="tab-button" onclick="showTab('payment')">Payment</button>
+        <button class="tab-button" onclick="showTab('subscriptions')">Subscriptions</button>
+        <button class="tab-button" onclick="showTab('test')">Test APIs</button>
+    </div>
+
+    <!-- Referrer Tab -->
+    <div id="referrer" class="tab-content active">
+        <div class="container">
+            <h2>Referrer Register</h2>
+            
+            <!-- Email Verification Section -->
+            <div class="verification-section">
+                <h3>Step 1: Email Verification</h3>
+                <div class="form-group">
+                    <label for="refEmail">Email:</label>
+                    <input type="email" id="refEmail" placeholder="Enter email">
+                </div>
+                <button onclick="sendReferrerVerification()">Send Verification Code</button>
+                <div id="refVerificationStatus" class="verification-status verification-pending" style="display: none;">
+                    Verification pending...
+                </div>
+                
+                <div id="refVerificationForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="refVerificationCode">Verification Code (6 digits):</label>
+                        <input type="text" id="refVerificationCode" placeholder="Enter 6-digit code" maxlength="6">
+                    </div>
+                    <button onclick="verifyReferrerEmail()">Verify Email</button>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="refRegistrationForm" style="display: none;">
+                <h3>Step 2: Complete Registration</h3>
+                <div class="form-group">
+                    <label for="refFirstName">First Name:</label>
+                    <input type="text" id="refFirstName" placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label for="refLastName">Last Name:</label>
+                    <input type="text" id="refLastName" placeholder="Enter last name">
+                </div>
+                <div class="form-group">
+                    <label for="refPassword">Password:</label>
+                    <input type="password" id="refPassword" placeholder="Enter password (min 8 chars)">
+                </div>
+                <button onclick="registerReferrer()">Register Referrer</button>
+            </div>
+
+            <div id="referrerResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Candidate Tab -->
+    <div id="candidate" class="tab-content">
+        <div class="container">
+            <h2>Candidate Register</h2>
+            
+            <!-- Email Verification Section -->
+            <div class="verification-section">
+                <h3>Step 1: Email Verification</h3>
+                <div class="form-group">
+                    <label for="canEmail">Email:</label>
+                    <input type="email" id="canEmail" placeholder="Enter email">
+                </div>
+                <button onclick="sendCandidateVerification()">Send Verification Code</button>
+                <div id="canVerificationStatus" class="verification-status verification-pending" style="display: none;">
+                    Verification pending...
+                </div>
+                
+                <div id="canVerificationForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="canVerificationCode">Verification Code (6 digits):</label>
+                        <input type="text" id="canVerificationCode" placeholder="Enter 6-digit code" maxlength="6">
+                    </div>
+                    <button onclick="verifyCandidateEmail()">Verify Email</button>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="canRegistrationForm" style="display: none;">
+                <h3>Step 2: Complete Registration</h3>
+                <div class="form-group">
+                    <label for="canFirstName">First Name:</label>
+                    <input type="text" id="canFirstName" placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label for="canLastName">Last Name:</label>
+                    <input type="text" id="canLastName" placeholder="Enter last name">
+                </div>
+                <div class="form-group">
+                    <label for="canPassword">Password:</label>
+                    <input type="password" id="canPassword" placeholder="Enter password (min 8 chars)">
+                </div>
+                <div class="form-group">
+                    <label for="referredBy">Referred By (UUID):</label>
+                    <input type="text" id="referredBy" placeholder="Enter referrer UUID">
+                </div>
+                <button onclick="registerCandidate()">Register Candidate</button>
+            </div>
+
+            <div id="candidateResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Login Tab -->
+    <div id="login" class="tab-content">
+        <div class="container">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label for="loginRole">Role:</label>
+                <select id="loginRole">
+                    <option value="referrer">Referrer</option>
+                    <option value="candidate">Candidate</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button onclick="login()">Login</button>
+            <div id="loginResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Password Reset Tab -->
+    <div id="password" class="tab-content">
+        <div class="container">
+            <h2>Password Reset</h2>
+            <p>Reset your password using email verification.</p>
+
+            <!-- Forgot Password -->
+            <div class="verification-section">
+                <h3>Forgot Password</h3>
+                <p>Send password reset email to your registered email address.</p>
+                
+                <div class="form-group">
+                    <label for="forgotPasswordEmail">Email:</label>
+                    <input type="email" id="forgotPasswordEmail" placeholder="Enter your email address">
+                </div>
+                <div class="form-group">
+                    <label for="forgotPasswordRole">Role:</label>
+                    <select id="forgotPasswordRole" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="referrer">Referrer</option>
+                        <option value="candidate">Candidate</option>
+                    </select>
+                </div>
+                
+                <button onclick="forgotPassword()">Send Reset Email</button>
+                <div id="forgotPasswordResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Reset Password -->
+            <div class="verification-section">
+                <h3>Reset Password</h3>
+                <p>Reset your password using the token received via email.</p>
+                
+                <div class="form-group">
+                    <label for="resetPasswordToken">Reset Token:</label>
+                    <input type="text" id="resetPasswordToken" placeholder="Enter reset token from email">
+                </div>
+                <div class="form-group">
+                    <label for="resetPasswordNewPassword">New Password:</label>
+                    <input type="password" id="resetPasswordNewPassword" placeholder="Enter new password">
+                </div>
+
+                
+                <button onclick="resetPassword()">Reset Password</button>
+                <div id="resetPasswordResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Updates Tab -->
+    <div id="user-updates" class="tab-content">
+        <div class="container">
+            <h2>User Updates API Test</h2>
+            
+            <!-- Create Post (Candidate Only) -->
+            <div class="verification-section">
+                <h3>Create Post (Candidate Only)</h3>
+                <div class="form-group">
+                    <label for="postDescription">Post Description:</label>
+                    <textarea id="postDescription" placeholder="Enter post description (max 1000 chars)" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                <button onclick="createPost()">Create Post</button>
+                <div id="createPostResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get My Updates (Candidate Only) -->
+            <div class="verification-section">
+                <h3>Get My Updates (Candidate Only)</h3>
+                <div class="form-group">
+                    <label for="myUpdatesLimit">Limit:</label>
+                    <input type="number" id="myUpdatesLimit" placeholder="20" value="20" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label for="myUpdatesPage">Page:</label>
+                    <input type="number" id="myUpdatesPage" placeholder="1" value="1" min="1">
+                </div>
+                <button onclick="getMyUpdates()">Get My Updates</button>
+                <div id="myUpdatesResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Referrer Updates (Referrer Only) -->
+            <div class="verification-section">
+                <h3>Get Referrer Updates (Referrer Only)</h3>
+                <div class="form-group">
+                    <label for="referrerUpdatesLimit">Limit:</label>
+                    <input type="number" id="referrerUpdatesLimit" placeholder="20" value="20" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label for="referrerUpdatesPage">Page:</label>
+                    <input type="number" id="referrerUpdatesPage" placeholder="1" value="1" min="1">
+                </div>
+                <button onclick="getReferrerUpdates()">Get Referrer Updates</button>
+                <div id="referrerUpdatesResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Update Post (Candidate Only) -->
+            <div class="verification-section">
+                <h3>Update Post (Candidate Only)</h3>
+                <div class="form-group">
+                    <label for="updatePostId">Post ID (UUID):</label>
+                    <input type="text" id="updatePostId" placeholder="Enter post UUID to update">
+                </div>
+                <div class="form-group">
+                    <label for="updatePostDescription">New Description:</label>
+                    <textarea id="updatePostDescription" placeholder="Enter new description (max 1000 chars)" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                <button onclick="updatePost()">Update Post</button>
+                <div id="updatePostResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Tab -->
+    <div id="resume" class="tab-content">
+        <div class="container">
+            <h2>Resume API Test</h2>
+            
+            <!-- Resume Sections Management -->
+            <div class="verification-section">
+                <h3>Resume Sections Management</h3>
+                
+                <!-- Professional Summary -->
+                <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <h4>Professional Summary</h4>
+                    <div class="form-group">
+                        <label for="summaryText">Summary:</label>
+                        <textarea id="summaryText" placeholder="Enter professional summary" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                    </div>
+                    <button onclick="createProfessionalSummary()">Create Summary</button>
+                    <button onclick="updateProfessionalSummary()">Update Summary</button>
+                    <div id="summaryResponse" class="response" style="display: none;"></div>
+                </div>
+
+                <!-- Work Experience -->
+                <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <h4>Work Experience</h4>
+                    <div class="form-group">
+                        <label for="workTitle">Job Title:</label>
+                        <input type="text" id="workTitle" placeholder="Enter job title">
+                    </div>
+                    <div class="form-group">
+                        <label for="workCompany">Company:</label>
+                        <input type="text" id="workCompany" placeholder="Enter company name">
+                    </div>
+                    <div class="form-group">
+                        <label for="workDateRange">Date Range:</label>
+                        <input type="text" id="workDateRange" placeholder="e.g., 2020-2023">
+                    </div>
+                    <div class="form-group">
+                        <label for="workDescription">Description:</label>
+                        <textarea id="workDescription" placeholder="Enter work description" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                    </div>
+                    <button onclick="createWorkExperience()">Add Work Experience</button>
+                    <div id="workExperienceResponse" class="response" style="display: none;"></div>
+                </div>
+
+                <!-- Skills -->
+                <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <h4>Skills</h4>
+                    <div class="form-group">
+                        <label for="skillName">Skill Name:</label>
+                        <input type="text" id="skillName" placeholder="Enter skill name">
+                    </div>
+                    <button onclick="addResumeSkill()">Add Skill</button>
+                    <div id="skillResponse" class="response" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Resume Operations -->
+            <div class="verification-section">
+                <h3>Resume Operations</h3>
+                
+                <!-- Get Resume Sections -->
+                <button onclick="getMyResumeSections()">Get My Resume Sections</button>
+                <div id="resumeSectionsResponse" class="response" style="display: none;"></div>
+
+                <!-- Get Complete Resume -->
+                <button onclick="getMyCompleteResume()">Get My Complete Resume</button>
+                <div id="completeResumeResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Candidate Resume (Referrer Only) -->
+            <div class="verification-section">
+                <h3>Get Candidate Resume (Referrer Only)</h3>
+                <p>Retrieve a candidate's complete resume information. Only accessible if the candidate is in your deck.</p>
+                
+                <div class="form-group">
+                    <label for="candidateResumeId">Candidate ID:</label>
+                    <input type="text" id="candidateResumeId" placeholder="Enter candidate UUID from your deck">
+                </div>
+                
+                <button onclick="getCandidateResume()">Get Candidate Resume</button>
+                <div id="getCandidateResumeResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- PDF Resume Parsing -->
+            <div class="verification-section">
+                <h3>PDF Resume Parsing (AI-Powered)</h3>
+                <p>Upload a PDF resume file to automatically create resume sections using AI.</p>
+                
+                <!-- File Upload -->
+                <div class="form-group">
+                    <label for="pdfFile">PDF Resume File:</label>
+                    <input type="file" id="pdfFile" accept=".pdf" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                    <small style="color: #666;">Maximum file size: 10MB. Only PDF files are allowed.</small>
+                </div>
+                
+                <button onclick="parsePdfResume()">Parse PDF & Create Sections</button>
+                <div id="pdfParseResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Resume Validation -->
+            <div class="verification-section">
+                <h3>Resume Validation</h3>
+                <p>Referrers can provide feedback on candidate resumes, and candidates can view validations.</p>
+                
+                <!-- Create Resume Validation (Referrer Only) -->
+                <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <h4>Create Resume Validation (Referrer Only)</h4>
+                    <p>Provide feedback and suggestions for a candidate's resume section.</p>
+                    
+                    <div class="form-group">
+                        <label for="validationResumeId">Resume Section ID:</label>
+                        <input type="text" id="validationResumeId" placeholder="Enter resume section UUID">
+                    </div>
+                    <div class="form-group">
+                        <label for="validationText">Feedback Text:</label>
+                        <textarea id="validationText" placeholder="Enter your suggestions and feedback..." rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                    </div>
+                    
+                    <button onclick="createResumeValidation()">Create Validation</button>
+                    <div id="createValidationResponse" class="response" style="display: none;"></div>
+                </div>
+
+                <!-- Get Resume Validations (Candidate Only) -->
+                <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <h4>Get Resume Validations (Candidate Only)</h4>
+                    <p>View all validations and feedback for your resume sections.</p>
+                    
+                    <div class="form-group">
+                        <label for="getValidationsResumeId">Resume Section ID:</label>
+                        <input type="text" id="getValidationsResumeId" placeholder="Enter resume section UUID">
+                    </div>
+                    
+                    <button onclick="getResumeValidations()">Get Validations</button>
+                    <div id="getValidationsResponse" class="response" style="display: none;"></div>
+                </div>
+
+                <!-- Delete Resume Validation (Referrer Only) -->
+                <div class="verification-section" style="margin: 10px 0; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <h4>Delete Resume Validation (Referrer Only)</h4>
+                    <p>Delete your own validation feedback.</p>
+                    
+                    <div class="form-group">
+                        <label for="deleteValidationId">Validation ID:</label>
+                        <input type="text" id="deleteValidationId" placeholder="Enter validation UUID to delete">
+                    </div>
+                    
+                    <button onclick="deleteResumeValidation()" style="background-color: #dc3545;">Delete Validation</button>
+                    <div id="deleteValidationResponse" class="response" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Tab -->
+    <div id="deck" class="tab-content">
+        <div class="container">
+            <h2>Deck API Test</h2>
+            <p><strong>Note:</strong> This API is only available for authenticated referrers.</p>
+            
+            <!-- My Deck -->
+            <div class="verification-section">
+                <h3>My Deck</h3>
+                <p>View the list of candidates you have invited to your deck.</p>
+                
+                <!-- Pagination Controls -->
+                <div class="form-group">
+                    <label for="deckLimit">Items per page:</label>
+                    <input type="number" id="deckLimit" value="20" min="1" max="100" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <div class="form-group">
+                    <label for="deckPage">Page:</label>
+                    <input type="number" id="deckPage" value="1" min="1" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                
+                <button onclick="getMyDeck()">Get My Deck</button>
+                <div id="deckResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get My Referrers (Candidate Only) -->
+            <div class="verification-section">
+                <h3>Get My Referrers (Candidate Only)</h3>
+                <p>View all referrers who have added you to their deck.</p>
+                <p><strong>Response includes:</strong> Referrer names, submission counts, last submission dates, connection dates</p>
+                
+                <div class="form-group">
+                    <label for="myReferrersLimit">Limit:</label>
+                    <input type="number" id="myReferrersLimit" value="20" min="1" max="100" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <div class="form-group">
+                    <label for="myReferrersPage">Page:</label>
+                    <input type="number" id="myReferrersPage" value="1" min="1" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                
+                <button onclick="getMyReferrers()">Get My Referrers</button>
+                <div id="myReferrersResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requirements Tab -->
+    <div id="requirements" class="tab-content">
+        <div class="container">
+            <h2>Requirements API Test</h2>
+            <p>Create, search, and manage job requirements.</p>
+
+            <!-- Create Requirement -->
+            <div class="verification-section">
+                <h3>Create Job Requirement</h3>
+                <p>Create a new job requirement (Referrer Only).</p>
+                
+                <div class="form-group">
+                    <label for="requirementTitle">Title:</label>
+                    <input type="text" id="requirementTitle" placeholder="e.g., Senior Software Engineer">
+                </div>
+                <div class="form-group">
+                    <label for="requirementOverview">Overview:</label>
+                    <textarea id="requirementOverview" placeholder="Job requirement overview..." rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="requirementSkills">Required Skills:</label>
+                    <input type="text" id="requirementSkills" placeholder="e.g., JavaScript, React, Node.js (comma separated)">
+                </div>
+                <div class="form-group">
+                    <label for="requirementDesiredSkills">Desired Skills (Optional):</label>
+                    <input type="text" id="requirementDesiredSkills" placeholder="e.g., TypeScript, AWS (comma separated)">
+                </div>
+                <div class="form-group">
+                    <label for="requirementLocation">Location (Optional):</label>
+                    <input type="text" id="requirementLocation" placeholder="e.g., San Francisco, CA">
+                </div>
+                <div class="form-group">
+                    <label for="requirementWorkStyle">Work Style (Optional):</label>
+                    <select id="requirementWorkStyle" multiple style="height: 80px;">
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="requirementSalaryCeiling">Salary Ceiling (Optional):</label>
+                    <input type="number" id="requirementSalaryCeiling" placeholder="e.g., 150000">
+                </div>
+                <div class="form-group">
+                    <label for="requirementClosingDate">Closing Date (Optional):</label>
+                    <input type="date" id="requirementClosingDate">
+                </div>
+                <div class="form-group">
+                    <label for="requirementVisibility">Visibility (Optional):</label>
+                    <select id="requirementVisibility">
+                        <option value="">Select Visibility</option>
+                        <option value="circle">Circle</option>
+                        <option value="public">Public</option>
+                    </select>
+                </div>
+                
+                <button onclick="createRequirement()">Create Requirement</button>
+                <div id="createRequirementResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Search Requirements -->
+            <div class="verification-section">
+                <h3>Search Requirements</h3>
+                <p>Search for open job requirements.</p>
+                
+                <div class="form-group">
+                    <label for="searchLocation">Location (Optional):</label>
+                    <input type="text" id="searchLocation" placeholder="Search by location">
+                </div>
+                <div class="form-group">
+                    <label for="searchSkills">Skills (Optional):</label>
+                    <input type="text" id="searchSkills" placeholder="JavaScript,React,TypeScript (comma-separated)">
+                </div>
+                <div class="form-group">
+                    <label for="searchWorkStyle">Work Style (Optional):</label>
+                    <select id="searchWorkStyle" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="">All Styles</option>
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchSortBy">Sort By (Optional):</label>
+                    <select id="searchSortBy" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="">Default</option>
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                        <option value="mostResponses">Most Responses</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchPage">Page:</label>
+                    <input type="number" id="searchPage" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="searchLimit">Limit:</label>
+                    <input type="number" id="searchLimit" value="10" min="1" max="100">
+                </div>
+                
+                <button onclick="searchRequirements()">Search Requirements</button>
+                <div id="searchRequirementsResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get My Requirements -->
+            <div class="verification-section">
+                <h3>Get My Requirements</h3>
+                <p>View all requirements you created with response statistics (Referrer Only).</p>
+                
+                <button onclick="getMyRequirements()">Get My Requirements</button>
+                <div id="getMyRequirementsResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Current User Info -->
+            <div class="verification-section">
+                <h3>Get Current User Info</h3>
+                <p>Get your current user information from the JWT token (sensitive data excluded).</p>
+                <p><strong>Response includes:</strong> User ID, email, firstName, lastName, roles, subscription info, etc.</p>
+                
+                <button onclick="getCurrentUserInfo()">Get My Info</button>
+                <div id="getCurrentUserInfoResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Requirement Details -->
+            <div class="verification-section">
+                <h3>Get Requirement Details</h3>
+                <p>Get detailed information about a specific requirement.</p>
+                
+                <div class="form-group">
+                    <label for="requirementId">Requirement ID:</label>
+                    <input type="text" id="requirementId" placeholder="Enter requirement UUID">
+                </div>
+                
+                <button onclick="getRequirementDetails()">Get Details</button>
+                <div id="getRequirementDetailsResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Respond to Requirement -->
+            <div class="verification-section">
+                <h3>Respond to Requirement</h3>
+                <p>Propose a candidate from your deck to a requirement (Referrer Only).</p>
+                
+                <div class="form-group">
+                    <label for="respondRequirementId">Requirement ID:</label>
+                    <input type="text" id="respondRequirementId" placeholder="Enter requirement UUID">
+                </div>
+                <div class="form-group">
+                    <label for="respondCandidateId">Candidate ID:</label>
+                    <input type="text" id="respondCandidateId" placeholder="Enter candidate UUID from your deck">
+                </div>
+                <div class="form-group">
+                    <label for="respondCandidateOverview">Candidate Overview:</label>
+                    <textarea id="respondCandidateOverview" placeholder="Brief overview of the candidate..." rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="respondWhyThisCandidate">Why This Candidate:</label>
+                    <textarea id="respondWhyThisCandidate" placeholder="Why this candidate is suitable for this requirement..." rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="respondPurchasePrice">Purchase Price (dollars):</label>
+                    <input type="number" id="respondPurchasePrice" placeholder="50.00" min="0.01" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="respondSupportingSkills">Supporting Skills (Optional):</label>
+                    <input type="text" id="respondSupportingSkills" placeholder="JavaScript, React, Node.js (comma-separated)">
+                </div>
+                <div class="form-group">
+                    <label for="respondAnonymizedHeadline">Anonymized Headline (Optional):</label>
+                    <input type="text" id="respondAnonymizedHeadline" placeholder="e.g., Senior Full-Stack Developer">
+                </div>
+                
+                <button onclick="respondToRequirement()">Submit Response</button>
+                <div id="respondToRequirementResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Requirement Responses -->
+            <div class="verification-section">
+                <h3>Get Requirement Responses</h3>
+                <p>View all responses for a specific requirement (Referrer Only).</p>
+                
+                <div class="form-group">
+                    <label for="responsesRequirementId">Requirement ID:</label>
+                    <input type="text" id="responsesRequirementId" placeholder="Enter requirement UUID">
+                </div>
+                <div class="form-group">
+                    <label for="responsesPage">Page:</label>
+                    <input type="number" id="responsesPage" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="responsesLimit">Limit:</label>
+                    <input type="number" id="responsesLimit" value="10" min="1" max="100">
+                </div>
+                
+                <button onclick="getRequirementResponses()">Get Responses</button>
+                <div id="getRequirementResponsesResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Approve Response -->
+            <div class="verification-section">
+                <h3>Approve Response</h3>
+                <p>Approve a candidate response and deduct balance (Referrer Only).</p>
+                
+                <div class="form-group">
+                    <label for="approveRequirementId">Requirement ID:</label>
+                    <input type="text" id="approveRequirementId" placeholder="Enter requirement UUID">
+                </div>
+                <div class="form-group">
+                    <label for="approveResponseId">Response ID:</label>
+                    <input type="text" id="approveResponseId" placeholder="Enter response UUID">
+                </div>
+                
+                <button onclick="approveResponse()" style="background-color: #28a745;">Approve Response</button>
+                <div id="approveResponseResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Reject Response -->
+            <div class="verification-section">
+                <h3>Reject Response</h3>
+                <p>Reject a candidate response (Referrer Only).</p>
+                
+                <div class="form-group">
+                    <label for="approveRequirementId">Requirement ID:</label>
+                    <input type="text" id="rejectRequirementId" placeholder="Enter requirement UUID">
+                </div>
+                <div class="form-group">
+                    <label for="approveResponseId">Response ID:</label>
+                    <input type="text" id="rejectResponseId" placeholder="Enter response UUID">
+                </div>
+                
+                <button onclick="rejectResponse()" style="background-color: #dc3545;">Reject Response</label>
+                <div id="rejectResponseResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Report Requirement -->
+            <div class="verification-section">
+                <h3>Report Requirement</h3>
+                <p>Report a questionable job requirement (Referrer Only).</p>
+                
+                <div class="form-group">
+                    <label for="reportRequirementId">Requirement ID:</label>
+                    <input type="text" id="reportRequirementId" placeholder="Enter requirement UUID">
+                </div>
+                <div class="form-group">
+                    <label for="reportReason">Reason:</label>
+                    <textarea id="reportReason" placeholder="Why are you reporting this requirement?" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                
+                <button onclick="reportRequirement()" style="background-color: #ffc107;">Report Requirement</button>
+                <div id="reportRequirementResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Close Requirement -->
+            <div class="verification-section">
+                <h3>Close Requirement</h3>
+                <p>Close a job requirement by setting its status to CLOSED (Referrer Only). Only the author can close their own requirements.</p>
+                
+                <div class="form-group">
+                    <label for="closeRequirementId">Requirement ID:</label>
+                    <input type="text" id="closeRequirementId" placeholder="Enter requirement UUID to close">
+                </div>
+                
+                <button onclick="closeRequirement()" style="background-color: #6c757d;">Close Requirement</button>
+                <div id="closeRequirementResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Interest Tab -->
+    <div id="candidate-interest" class="tab-content">
+        <div class="container">
+            <h2>Candidate Interest API Test</h2>
+            <p>Manage position offers between referrers and candidates.</p>
+
+            <!-- Create Candidate Interest (Referrer Only) -->
+            <div class="verification-section">
+                <h3>Create Position Offer (Referrer Only)</h3>
+                <p>Create a position offer for a candidate in your deck.</p>
+                
+                <div class="form-group">
+                    <label for="interestCandidateId">Candidate ID:</label>
+                    <input type="text" id="interestCandidateId" placeholder="Enter candidate UUID from your deck">
+                </div>
+                <div class="form-group">
+                    <label for="interestPositionTitle">Position Title:</label>
+                    <input type="text" id="interestPositionTitle" placeholder="e.g., Senior Frontend Developer">
+                </div>
+                <div class="form-group">
+                    <label for="interestCompany">Company:</label>
+                    <input type="text" id="interestCompany" placeholder="e.g., Acme Corporation">
+                </div>
+                <div class="form-group">
+                    <label for="interestComment">Comment (Optional):</label>
+                    <textarea id="interestComment" placeholder="Optional comment about the position offer..." rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
+                </div>
+                
+                <button onclick="createCandidateInterest()">Create Position Offer</button>
+                <div id="createInterestResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get All Candidate Interests -->
+            <div class="verification-section">
+                <h3>Get All Candidate Interests</h3>
+                <p>View all position offers based on your role. Referrers see their offers, candidates see offers they received.</p>
+                <p><strong>Response includes:</strong> Position details, status, candidate/referrer info, timestamps</p>
+                
+                <button onclick="getAllCandidateInterests()">Get All Interests</button>
+                <div id="getAllInterestsResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Specific Candidate Interest -->
+            <div class="verification-section">
+                <h3>Get Specific Candidate Interest</h3>
+                <p>View detailed information about a specific position offer.</p>
+                <p><strong>Response includes:</strong> Full position details, status, candidate/referrer info, timestamps</p>
+                
+                <div class="form-group">
+                    <label for="getInterestId">Interest ID:</label>
+                    <input type="text" id="getInterestId" placeholder="Enter candidate interest UUID">
+                </div>
+                
+                <button onclick="getSpecificCandidateInterest()">Get Interest Details</button>
+                <div id="getSpecificInterestResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Approve Candidate Interest (Candidate Only) -->
+            <div class="verification-section">
+                <h3>Approve Position Offer (Candidate Only)</h3>
+                <p>Approve a position offer you received.</p>
+                
+                <div class="form-group">
+                    <label for="approveInterestId">Interest ID:</label>
+                    <input type="text" id="approveInterestId" placeholder="Enter candidate interest UUID to approve">
+                </div>
+                
+                <button onclick="approveCandidateInterest()" style="background-color: #28a745;">Approve Offer</button>
+                <div id="approveInterestResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Reject Candidate Interest (Candidate Only) -->
+            <div class="verification-section">
+                <h3>Reject Position Offer (Candidate Only)</h3>
+                <p>Reject a position offer you received.</p>
+                
+                <div class="form-group">
+                    <label for="rejectInterestId">Interest ID:</label>
+                    <input type="text" id="rejectInterestId" placeholder="Enter candidate interest UUID to reject">
+                </div>
+                
+                <button onclick="rejectCandidateInterest()" style="background-color: #dc3545;">Reject Offer</button>
+                <div id="rejectInterestResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Tab -->
+    <div id="payment" class="tab-content">
+        <div class="container">
+            <h2>Payment Management (Referrer Only)</h2>
+            <p>Manage Stripe Connect account, add funds, check balance, and withdraw earnings.</p>
+
+            <!-- Stripe Connect Onboarding -->
+            <div class="verification-section">
+                <h3>Stripe Connect Onboarding</h3>
+                <p>Create Stripe Connect onboarding link to receive payments.</p>
+                
+                <div class="form-group">
+                    <label for="returnUrl">Return URL:</label>
+                    <input type="url" id="returnUrl" value="http://192.168.0.204:3000/payment/callback" placeholder="Return URL after onboarding">
+                </div>
+                <div class="form-group">
+                    <label for="refreshUrl">Refresh URL:</label>
+                    <input type="url" id="refreshUrl" value="http://192.168.0.204:3000/payment/refresh" placeholder="Refresh URL for expired links">
+                </div>
+                
+                <button onclick="createConnectLink()">Create Connect Link</button>
+                <div id="connectLinkResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Add Funds -->
+            <div class="verification-section">
+                <h3>Add Funds to Account</h3>
+                <p>Add funds to your account for future payments (amount in cents).</p>
+                
+                <div class="form-group">
+                    <label for="addFundAmount">Amount (cents):</label>
+                    <input type="number" id="addFundAmount" value="1000" min="100" placeholder="1000 = $10.00">
+                </div>
+                <div class="form-group">
+                    <label for="addFundCurrency">Currency:</label>
+                    <select id="addFundCurrency" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="usd">USD</option>
+                        <option value="eur">EUR</option>
+                        <option value="jpy">JPY</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="addFundSuccessUrl">Success URL:</label>
+                    <input type="url" id="addFundSuccessUrl" value="http://192.168.0.204:3000/payment/success" placeholder="URL to redirect after successful payment">
+                </div>
+                <div class="form-group">
+                    <label for="addFundCancelUrl">Cancel URL:</label>
+                    <input type="url" id="addFundCancelUrl" value="http://192.168.0.204:3000/payment/cancel" placeholder="URL to redirect after cancelled payment">
+                </div>
+                
+                <button onclick="addFund()">Add Funds</button>
+                <div id="addFundResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Check Balance -->
+            <div class="verification-section">
+                <h3>Check Account Balance</h3>
+                <p>View your current account balance and pending amounts.</p>
+                
+                <button onclick="checkBalance()">Check Balance</button>
+                <div id="balanceResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Withdraw Funds -->
+            <div class="verification-section">
+                <h3>Withdraw Funds</h3>
+                <p>Withdraw funds from your account to your bank account.</p>
+                
+                <div class="form-group">
+                    <label for="withdrawAmount">Amount (cents):</label>
+                    <input type="number" id="withdrawAmount" value="500" min="100" placeholder="500 = $5.00">
+                </div>
+                <div class="form-group">
+                    <label for="withdrawCurrency">Currency:</label>
+                    <select id="withdrawCurrency" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="usd">USD</option>
+                        <option value="eur">EUR</option>
+                        <option value="jpy">JPY</option>
+                    </select>
+                </div>
+                
+                <button onclick="withdrawFunds()">Withdraw Funds</button>
+                <div id="withdrawResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscriptions Tab -->
+    <div id="subscriptions" class="tab-content">
+        <div class="container">
+            <h2>Subscriptions API Test</h2>
+            <p>Manage subscription plans, checkout sessions, and subscription changes.</p>
+
+            <!-- Get All Plans -->
+            <div class="verification-section">
+                <h3>Get Subscription Plans</h3>
+                <p>Retrieve all available subscription plans or filter by role.</p>
+                
+                <div class="form-group">
+                    <label for="planRole">Filter by Role (Optional):</label>
+                    <select id="planRole" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="">All Plans</option>
+                        <option value="referrer">Referrer Only</option>
+                        <option value="candidate">Candidate Only</option>
+                    </select>
+                </div>
+                
+                <button onclick="getAllPlans()">Get All Plans</button>
+                <div id="getAllPlansResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get My Subscription -->
+            <div class="verification-section">
+                <h3>Get My Subscription</h3>
+                <p>View your current subscription status and details.</p>
+                
+                <button onclick="getMySubscription()">Get My Subscription</button>
+                <div id="getMySubscriptionResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Create Checkout Session -->
+            <div class="verification-section">
+                <h3>Create Checkout Session</h3>
+                <p>Create a Stripe checkout session for subscription.</p>
+                
+                <div class="form-group">
+                    <label for="checkoutPlanCode">Plan Code:</label>
+                    <input type="text" id="checkoutPlanCode" placeholder="e.g., basic, premium, pro">
+                </div>
+                <div class="form-group">
+                    <label for="checkoutSuccessUrl">Success URL:</label>
+                    <input type="url" id="checkoutSuccessUrl" value="http://192.168.0.204:3000/subscription/success" placeholder="URL to redirect after successful payment">
+                </div>
+                <div class="form-group">
+                    <label for="checkoutCancelUrl">Cancel URL:</label>
+                    <input type="url" id="checkoutCancelUrl" value="http://192.168.0.204:3000/subscription/cancel" placeholder="URL to redirect after cancelled payment">
+                </div>
+                <div class="form-group">
+                    <label for="checkoutInterval">Billing Interval:</label>
+                    <select id="checkoutInterval" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <option value="month">Monthly</option>
+                        <option value="year">Yearly</option>
+                    </select>
+                </div>
+                
+                <button onclick="createCheckout()">Create Checkout Session</button>
+                <div id="createCheckoutResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Manage Subscription -->
+            <div class="verification-section">
+                <h3>Manage Subscription</h3>
+                <p>Access Stripe Customer Portal to manage your subscription, payment methods, and billing.</p>
+                
+                <button onclick="manageSubscription()">Open Customer Portal</button>
+                <div id="manageSubscriptionResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test APIs Tab -->
+    <div id="test" class="tab-content">
+        <!-- Current Token Display -->
+        <div class="container" id="tokenContainer" style="display: none;">
+            <h2>Current Token</h2>
+            <div id="tokenDisplay" class="token-display"></div>
+            <button onclick="clearToken()">Clear Token</button>
+        </div>
+
+        <!-- Protected Route Test -->
+        <div class="container" id="protectedContainer" style="display: none;">
+            <h2>Protected Route Test</h2>
+            <button onclick="testProtectedRoute()">Test /auth/me</button>
+            <div id="protectedResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Referral Link Test -->
+        <div class="container" id="referralLinkContainer" style="display: none;">
+            <h2>Referral Link Test</h2>
+            <p><strong>Note:</strong> This API is only available for authenticated referrers.</p>
+            <button onclick="generateReferralLink()">Generate Referral Link</button>
+            <div id="referralLinkResponse" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Email Verification Test -->
+        <div class="container" id="verificationContainer" style="display: none;">
+            <h2>Email Verification Test</h2>
+            <div class="form-group">
+                <label for="verificationEmail">Email:</label>
+                <input type="email" id="verificationEmail" placeholder="Enter email for verification">
+            </div>
+            <button onclick="sendVerificationEmail()">Send Verification Email</button>
+            <div id="verificationResponse" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript files -->
+    <script src="js/tab-manager.js"></script>
+    <script src="js/auth-functions.js"></script>
+    <script src="js/user-updates-functions.js"></script>
+    <script src="js/resume-functions.js"></script>
+    <script src="js/deck-functions.js"></script>
+    <script src="js/requirements-functions.js"></script>
+    <script src="js/candidate-interest-functions.js"></script>
+    <script src="js/payment-functions.js"></script>
+    <script src="js/subscriptions-functions.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

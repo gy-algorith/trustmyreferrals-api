@@ -1,0 +1,23 @@
+<div class="container">
+    <h2>Deck API Test</h2>
+    <p><strong>Note:</strong> This API is only available for authenticated referrers.</p>
+    
+    <!-- My Deck -->
+    <div class="verification-section">
+        <h3>My Deck</h3>
+        <p>View the list of candidates you have invited to your deck.</p>
+        
+        <!-- Pagination Controls -->
+        <div class="form-group">
+            <label for="deckLimit">Items per page:</label>
+            <input type="number" id="deckLimit" value="20" min="1" max="100" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+                        <div class="form-group">
+                    <label for="deckPage">Page:</label>
+                    <input type="number" id="deckPage" value="1" min="1" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                </div>
+        
+        <button onclick="getMyDeck()">Get My Deck</button>
+        <div id="deckResponse" class="response" style="display: none;"></div>
+    </div>
+</div>
