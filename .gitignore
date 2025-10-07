@@ -55,3 +55,6 @@ test-stripe-flow.html
 
 deploy.sh
 quick-deploy.sh
+.env.production
+terraform/
+web_test/
