@@ -7,10 +7,12 @@ import { Requirement } from '../entities/requirement.entity';
 import { RequirementResponse } from '../entities/requirement-response.entity';
 import { User } from '../entities/user.entity';
 import { Deck } from '../entities/deck.entity';
+import { CandidateInterest } from '../entities/candidate-interest.entity';
+import { ReferrerCircle } from '../entities/referrer-circle.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Requirement, RequirementResponse, User, Deck]),
+    TypeOrmModule.forFeature([Requirement, RequirementResponse, User, Deck, CandidateInterest, ReferrerCircle]),
   ],
   controllers: [RequirementsController],
   providers: [RequirementsService, RequirementResponseService],

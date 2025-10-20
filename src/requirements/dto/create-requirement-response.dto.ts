@@ -7,11 +7,6 @@ export class CreateRequirementResponseDto {
   @IsNotEmpty()
   candidateId: string;
 
-  @ApiProperty({ description: 'Candidate overview', example: 'Experienced software engineer with 5+ years...' })
-  @IsString()
-  @IsNotEmpty()
-  candidateOverview: string;
-
   @ApiProperty({ description: 'Why this candidate is suitable', example: 'This candidate has the exact skills...' })
   @IsString()
   @IsNotEmpty()

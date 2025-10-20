@@ -37,10 +37,15 @@ export class PaymentService {
 
   // Stripe Connect 온보딩 링크 생성
   async createAccountLink(accountId: string): Promise<string> {
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+    const refreshUrl = `${normalizedBaseUrl}/en/withdraw-funds`;
+    const returnUrl = `${normalizedBaseUrl}/en/stripe-return`;
+
     const link = await this.stripe.accountLinks.create({
       account: accountId,
-      refresh_url: 'http://localhost:3000/my-page?connect=fail',
-      return_url: 'http://localhost:3000/my-page?connect=success',
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
       type: 'account_onboarding',
     });
     return link.url;

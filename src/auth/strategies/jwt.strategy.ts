@@ -39,6 +39,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        stripeAccountId: user.stripeAccountId ?? null,
+        stripeOnboardingStatus: user.stripeOnboardingStatus ?? null,
         role: payload.role, // 선택된 역할만
         status: user.status,
         emailVerified: user.emailVerified,

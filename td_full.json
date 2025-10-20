@@ -1,0 +1,88 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-east-1:211125721785:task-definition/trustmyreferrals-api-with-env:23",
+    "containerDefinitions": [
+        {
+            "name": "trustmyreferrals-api",
+            "image": "211125721785.dkr.ecr.us-east-1.amazonaws.com/trustmyreferrals-api:full-update-20251007T093932Z",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "entryPoint": [
+                "/bin/sh",
+                "-c"
+            ],
+            "command": [
+                "echo \"$ENV_FILE_CONTENT\" > /app/.env && grep -v \"^#\" /app/.env | grep -v \"^$\" | grep -v \"^NODE_ENV=\" | grep -v \"^PGSSLMODE=\" > /app/.env.clean && export $(cat /app/.env.clean | xargs) && export NODE_ENV=production PGSSLMODE=require && node dist/src/main"
+            ],
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "ENV_FILE_CONTENT",
+                    "valueFrom": "arn:aws:ssm:us-east-1:211125721785:parameter/trustmyreferrals/env"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/trustmyreferrals-api-parameter-store",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "trustmyreferrals-api-with-env",
+    "executionRoleArn": "arn:aws:iam::211125721785:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 23,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "ecs.capability.secrets.ssm.environment-variables"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "MANAGED_INSTANCES",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "registeredAt": "2025-10-07T18:42:11.011000+09:00",
+    "registeredBy": "arn:aws:iam::211125721785:user/gy-cli"
+}

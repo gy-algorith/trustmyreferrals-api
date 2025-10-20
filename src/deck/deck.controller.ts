@@ -33,6 +33,12 @@ export class DeckController {
     type: Number,
   })
   @ApiQuery({
+    name: 'excludeRequirementId',
+    required: false,
+    description: 'If provided, exclude candidates already registered in this requirement responses',
+    type: String,
+  })
+  @ApiQuery({
     name: 'page',
     required: false,
     description: 'Page number (default: 1)',
@@ -53,15 +59,17 @@ export class DeckController {
               id: { type: 'string' },
               candidateId: { type: 'string', description: 'Candidate user ID' },
               name: { type: 'string' },
-              skills: { 
-                type: 'array', 
-                items: { type: 'string' } 
+              resume: { 
+                type: 'object',
+                additionalProperties: { type: 'array', items: { type: 'object' } },
+                description: 'Aggregated resume sections (by sectionType)'
               },
               inDecks: { type: 'number' },
               dateAdded: { type: 'string', format: 'date-time' },
               isPremium: { type: 'boolean' },
               email: { type: 'string' },
               status: { type: 'string' },
+              isExisting: { type: 'boolean', description: 'Whether candidate already exists in the specified requirement' },
             },
           },
         },
@@ -99,6 +107,7 @@ export class DeckController {
   async getMyDeck(
     @Query('page') page = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 20,
+    @Query('excludeRequirementId') excludeRequirementId: string | undefined,
     @Request() req: any,
   ) {
     try {
@@ -123,7 +132,7 @@ export class DeckController {
       }
       
       console.log('✅ Found referrer:', user.id);
-      const deckItems = await this.deckService.getDeckSummaryByReferrer(user.id);
+      const deckItems = await this.deckService.getDeckSummaryByReferrer(user.id, excludeRequirementId);
       console.log('📊 Found deck items:', deckItems.length);
       
       // Apply pagination

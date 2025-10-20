@@ -56,6 +56,29 @@ export class RequirementsService {
       .where('requirement.status = :status', { status: RequirementStatus.OPEN })
       .andWhere('requirement.referrerId != :userId', { userId }); // 자신이 작성한 requirement 제외
 
+    // scope: public | circle (default: public)
+    const scope = searchDto.scope || 'public';
+    if (scope === 'public') {
+      queryBuilder.andWhere('requirement.visibility = :publicVis', { publicVis: 'public' });
+    } else if (scope === 'circle') {
+      queryBuilder.andWhere(
+        `(
+          requirement.visibility = :publicVis
+          OR (
+            requirement.visibility = :circleVis AND EXISTS (
+              SELECT 1 FROM referrer_circle rc
+              WHERE rc.status = :accepted
+                AND (
+                  (rc."inviterId" = :userId AND rc."accepterId" = requirement."referrerId")
+                  OR (rc."accepterId" = :userId AND rc."inviterId" = requirement."referrerId")
+                )
+            )
+          )
+        )`,
+        { publicVis: 'public', circleVis: 'circle', accepted: 'accepted', userId }
+      );
+    }
+
     // Skills 필터링 (콤마로 구분된 문자열을 배열로 변환)
     if (searchDto.skills) {
       const skillsArray = searchDto.skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);

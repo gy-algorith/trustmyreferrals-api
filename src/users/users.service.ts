@@ -70,6 +70,26 @@ export class UsersService {
     await this.usersRepository.save(user);
   }
 
+  /**
+   * 사용자의 refresh 토큰을 업데이트
+   * @param userId 사용자 ID
+   * @param refreshToken 새로운 refresh 토큰 (null이면 제거)
+   */
+  async updateRefreshToken(userId: string, refreshToken: string | null): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    
+    if (refreshToken === null) {
+      user.clearRefreshToken();
+    } else {
+      user.setRefreshToken(refreshToken);
+    }
+    
+    await this.usersRepository.save(user);
+  }
+
   async delete(id: string): Promise<void> {
     const user = await this.findById(id);
     await this.usersRepository.remove(user);

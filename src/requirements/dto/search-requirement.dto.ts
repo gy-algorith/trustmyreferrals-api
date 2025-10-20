@@ -42,4 +42,15 @@ export class SearchRequirementDto {
   @IsOptional()
   @IsString()
   limit?: string;
+
+  @ApiProperty({
+    description: 'Visibility scope of results',
+    required: false,
+    enum: ['public', 'circle'],
+    example: 'public',
+    default: 'public',
+  })
+  @IsOptional()
+  @IsEnum(['public', 'circle'] as const)
+  scope?: 'public' | 'circle';
 }

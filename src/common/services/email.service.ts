@@ -2,11 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  SESClient,
-  SendEmailCommand,
-  SendEmailCommandInput,
-} from '@aws-sdk/client-ses';
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -35,12 +30,12 @@ export interface VerificationStatus {
 }
 
 /**
- * Service for sending emails using AWS SES
+ * Service for sending emails using PHPMailer-style approach with nodemailer
+ * This service mimics the PHP PHPMailer configuration and behavior
  */
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly sesClient: SESClient;
   private readonly maxAttempts = 3;
   private readonly attemptCounts: Map<string, number> = new Map();
 
@@ -51,32 +46,7 @@ export class EmailService {
     @InjectRepository(Settings)
     private readonly settingsRepository: Repository<Settings>,
   ) {
-    // Initialize AWS SES client
-    const region = this.configService.get<string>('AWS_REGION') || 'us-east-1';
-    const accessKeyId =
-      this.configService.get<string>('AWS_ACCESS_KEY_ID') || '';
-    const secretAccessKey =
-      this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '';
-
-    // 자격 증명 로깅 (보안상 일부만 표시)
-    this.logger.log(`AWS Region: ${region}`);
-    this.logger.log(
-      `AWS Access Key ID: ${accessKeyId ? accessKeyId.substring(0, 5) + '...' + accessKeyId.substring(accessKeyId.length - 5) : 'not set'}`,
-    );
-    this.logger.log(
-      `AWS Secret Access Key: ${secretAccessKey ? '******' : 'not set'}`,
-    );
-
-    this.sesClient = new SESClient({
-      region,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
-    });
-
-    // SES 클라이언트 초기화 확인
-    this.logger.log('SES client initialized');
+    this.logger.log('EmailService initialized with PHPMailer-style configuration');
   }
 
   /**
@@ -101,21 +71,22 @@ export class EmailService {
    * @returns 완전한 Frontend URL
    */
   private async buildFrontendUrl(path: string): Promise<string> {
-    const baseUrl = await this.getFrontendSetting('frontend_base_url', 'https://previewme.xyz');
+    const baseUrl = await this.getFrontendSetting('frontend_base_url');
     return `${baseUrl}${path}`;
   }
 
   /**
-   * 이메일 템플릿 로드
+   * 이메일 템플릿 로드 (PHP 스타일)
    * @param templateName 템플릿 파일 이름
    * @returns 템플릿 내용
    */
   private loadEmailTemplate(templateName: string): string {
-    // 탐색할 잠재 경로들 (존재하는 첫 번째 경로를 사용)
+    // 탐색할 잠재 경로들 (PHP 스타일)
     const candidatePaths = [
       path.join(process.cwd(), 'dist', 'src', 'common', 'templates', 'email', templateName),
       path.join(__dirname, '..', 'templates', 'email', templateName),
       path.join(process.cwd(), 'src', 'common', 'templates', 'email', templateName),
+      path.join(process.cwd(), 'templates', 'email', templateName),
     ];
 
     for (const p of candidatePaths) {
@@ -129,9 +100,33 @@ export class EmailService {
       }
     }
 
-    // 템플릿 파일이 없을 경우 기본 인라인 템플릿 사용
+    // 템플릿 파일이 없을 경우 기본 인라인 템플릿 사용 (PHP 스타일)
     this.logger.warn(`Email template not found; using default inline template: ${templateName}`);
-    const defaultTemplate = `
+    return this.getDefaultTemplate(templateName);
+  }
+
+  /**
+   * 기본 템플릿 반환 (PHP 스타일)
+   * @param templateName 템플릿 이름
+   * @returns 기본 템플릿
+   */
+  private getDefaultTemplate(templateName: string): string {
+    switch (templateName) {
+      case 'verification-email.template.html':
+        return this.getVerificationEmailTemplate();
+      case 'password-reset.template.html':
+        return this.getPasswordResetTemplate();
+      default:
+        return this.getVerificationEmailTemplate();
+    }
+  }
+
+  /**
+   * 인증 이메일 템플릿 (PHP 스타일)
+   * @returns HTML 템플릿
+   */
+  private getVerificationEmailTemplate(): string {
+    return `
       <html>
         <body>
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto;">
@@ -145,56 +140,66 @@ export class EmailService {
         </body>
       </html>
     `;
-    return defaultTemplate;
   }
 
   /**
-   * 비밀번호 재설정 이메일 발송
+   * 비밀번호 재설정 이메일 템플릿 (PHP 스타일)
+   * @returns HTML 템플릿
+   */
+  private getPasswordResetTemplate(): string {
+    return `
+      <html>
+        <body>
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1f2937; margin-bottom: 24px;">Hello,</h2>
+            <p style="color: #374151; line-height: 1.6; margin-bottom: 20px;">
+              You requested a password reset. Please click the link below to create a new password:
+            </p>
+            <div style="margin: 30px 0;">
+              <a href="{{resetLink}}" 
+                 style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                Reset Password
+              </a>
+            </div>
+            <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+              If you did not request this, please ignore this email.
+            </p>
+            <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+              This link will expire in 1 hour.
+            </p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+              Thanks,<br>
+              The PreviewMe.xyz Team
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * 비밀번호 재설정 이메일 발송 (PHP 스타일)
    * @param email 이메일 주소
    * @param resetToken 비밀번호 재설정 토큰
    * @returns 발송 성공 여부
    */
   async sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
     try {
-      const resetPath = await this.getFrontendSetting('frontend_reset_password_path', '/en/reset-password');
+      const resetPath = await this.getFrontendSetting('frontend_reset_password_path');
       const frontendUrl = await this.buildFrontendUrl(resetPath);
       const resetLink = `${frontendUrl}?token=${resetToken}`;
 
-      // 비밀번호 재설정 이메일 템플릿
-      const htmlContent = `
-        <html>
-          <body>
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #1f2937; margin-bottom: 24px;">Hello,</h2>
-              <p style="color: #374151; line-height: 1.6; margin-bottom: 20px;">
-                You requested a password reset. Please click the link below to create a new password:
-              </p>
-              <div style="margin: 30px 0;">
-                <a href="${resetLink}" 
-                   style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
-                  Reset Password
-                </a>
-              </div>
-              <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
-                If you did not request this, please ignore this email.
-              </p>
-              <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
-                This link will expire in 24 hours.
-              </p>
-              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-              <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-                Thanks,<br>
-                The PreviewMe.xyz Team
-              </p>
-            </div>
-          </body>
-        </html>
-      `;
+      // 비밀번호 재설정 이메일 템플릿 로드
+      const htmlTemplate = this.loadEmailTemplate('password-reset.template.html');
+      const htmlContent = this.applyTemplateData(htmlTemplate, {
+        resetLink: resetLink
+      });
 
-      // 이메일 발송
+      // 이메일 발송 (PHP 스타일)
       const emailSent = await this.sendEmail(
         email,
-        'Password Reset Request',
+        'Password Reset Request for PreviewMe.xyz',
         htmlContent
       );
 
@@ -215,7 +220,7 @@ export class EmailService {
   }
 
   /**
-   * 템플릿에 데이터 적용
+   * 템플릿에 데이터 적용 (PHP 스타일)
    * @param template 템플릿 문자열
    * @param data 적용할 데이터 객체
    * @returns 데이터가 적용된 템플릿
@@ -253,7 +258,7 @@ export class EmailService {
   }
 
   /**
-   * Send verification email with a verification link
+   * Send verification email with a verification link (PHP 스타일)
    * @param email Email address to send verification to
    * @param purpose Verification purpose
    * @returns Verification result
@@ -263,7 +268,7 @@ export class EmailService {
     purpose: EmailVerificationPurpose = EmailVerificationPurpose.REGISTER,
   ): Promise<string> {
     try {
-      // Generate verification ID and code
+      // Generate verification ID and code (PHP 스타일)
       const verificationId = this.generateVerificationId();
       const verificationCode = this.generateVerificationCode();
 
@@ -307,7 +312,7 @@ export class EmailService {
 
       const htmlContent = this.applyTemplateData(htmlTemplate, templateData);
 
-      // 이메일 발송 시도
+      // 이메일 발송 시도 (PHP 스타일)
       this.logger.log(
         `Attempting to send verification email to: ${email} for purpose: ${purpose}`,
       );
@@ -426,7 +431,7 @@ export class EmailService {
   }
 
   /**
-   * Send a general email
+   * Send a general email using PHPMailer-style configuration
    * @param to Recipient email address
    * @param subject Email subject
    * @param htmlBody HTML email body
@@ -440,82 +445,68 @@ export class EmailService {
     textBody?: string,
   ): Promise<boolean> {
     try {
-      // 환경 변수 확인
-      const emailFrom = this.configService.get<string>('SES_SENDER_EMAIL');
-      if (!emailFrom) {
-        this.logger.warn(
-          'SES_SENDER_EMAIL is not set in environment variables. Using default value.',
-        );
-      }
+      // PHPMailer-style configuration from environment variables
+      const smtpHost = this.configService.get<string>('SMTP_HOST') || 'previewme.xyz';
+      const smtpPort = Number(this.configService.get<string>('SMTP_PORT') || '587');
+      const smtpUsername = this.configService.get<string>('SMTP_USERNAME');
+      const smtpPassword = this.configService.get<string>('SMTP_PASSWORD');
+      const smtpSecure = (this.configService.get<string>('SMTP_SECURE') || 'tls').toLowerCase(); // 'ssl' | 'tls'
+      const smtpAuthMethod = this.configService.get<string>('SMTP_AUTH_METHOD'); // e.g. 'LOGIN' | 'PLAIN'
+      const fromEmail = this.configService.get<string>('FROM_EMAIL');
+      const fromName = this.configService.get<string>('FROM_NAME');
 
-      // AWS 자격 증명 확인
-      const awsRegion = this.configService.get<string>('AWS_REGION');
-      const awsAccessKeyId =
-        this.configService.get<string>('AWS_ACCESS_KEY_ID');
-      const awsSecretAccessKey = this.configService.get<string>(
-        'AWS_SECRET_ACCESS_KEY',
-      );
+      // 로깅 (PHP 스타일)
+      this.logger.log(`SMTP Host: ${smtpHost}`);
+      this.logger.log(`SMTP Port: ${smtpPort}`);
+      this.logger.log(`SMTP Username: ${smtpUsername ? smtpUsername.substring(0, 5) + '...' + smtpUsername.substring(smtpUsername.length - 5) : 'not set'}`);
+      this.logger.log(`SMTP Password: ${smtpPassword ? '******' : 'not set'}`);
+      this.logger.log(`From Email: ${fromEmail}`);
+      this.logger.log(`From Name: ${fromName}`);
 
-      // 자세한 환경 변수 로깅
-      this.logger.log(
-        `SES_SENDER_EMAIL: ${emailFrom || 'not set (using default)'}`,
-      );
-      this.logger.log(`AWS_REGION: ${awsRegion || 'not set'}`);
-      this.logger.log(
-        `AWS_ACCESS_KEY_ID: ${awsAccessKeyId ? awsAccessKeyId.substring(0, 5) + '...' + awsAccessKeyId.substring(awsAccessKeyId.length - 5) : 'not set'}`,
-      );
-      this.logger.log(
-        `AWS_SECRET_ACCESS_KEY: ${awsSecretAccessKey ? '******' : 'not set'}`,
-      );
+      // nodemailer를 사용한 이메일 전송 (PHPMailer 스타일)
+      const nodemailer = require('nodemailer');
 
-      if (!awsRegion || !awsAccessKeyId || !awsSecretAccessKey) {
-        this.logger.warn(
-          'AWS credentials are not properly set in environment variables.',
-        );
-      }
-
-      const params: SendEmailCommandInput = {
-        Source: emailFrom || 'info@algorith.capital',
-        Destination: {
-          ToAddresses: [to],
+      // SMTP 설정 (PHP PHPMailer 스타일)
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure === 'ssl' || smtpPort === 465,
+        requireTLS: smtpSecure === 'tls',
+        auth: {
+          user: smtpUsername,
+          pass: smtpPassword,
         },
-        Message: {
-          Subject: {
-            Data: subject,
-            Charset: 'UTF-8',
-          },
-          Body: {
-            Html: {
-              Data: htmlBody,
-              Charset: 'UTF-8',
-            },
-            ...(textBody
-              ? {
-                  Text: {
-                    Data: textBody,
-                    Charset: 'UTF-8',
-                  },
-                }
-              : {}),
-          },
-        },
+        ...(smtpAuthMethod ? { authMethod: smtpAuthMethod } as any : {}),
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+
+      // 이메일 옵션 (PHP 스타일)
+      const mailOptions = {
+        from: `"${fromName}" <${fromEmail}>`,
+        to: to,
+        subject: subject,
+        html: htmlBody,
+        text: textBody || htmlBody.replace(/<[^>]*>/g, ''), // HTML 태그 제거
       };
 
-      // 이메일 전송 파라미터 로깅
+      // 이메일 전송 파라미터 로깅 (PHP 스타일)
       this.logger.log(
         `Email params: ${JSON.stringify({
-          Source: params.Source,
-          Destination: params.Destination,
-          Subject: params.Message.Subject.Data,
+          from: mailOptions.from,
+          to: mailOptions.to,
+          subject: mailOptions.subject,
         })}`,
       );
 
       this.logger.log(
         `Attempting to send email to: ${to} with subject: ${subject}`,
       );
-      const command = new SendEmailCommand(params);
-      await this.sesClient.send(command);
+
+      const info = await transporter.sendMail(mailOptions);
       this.logger.log(`Email sent successfully to: ${to}`);
+      this.logger.log(`Message ID: ${info.messageId}`);
       return true;
     } catch (error: unknown) {
       const err = error as Error;
@@ -524,42 +515,15 @@ export class EmailService {
         err.stack,
       );
 
-      // 자세한 오류 정보 로깅
-      const awsError = error as { name?: string; code?: string };
-      this.logger.error(`Error type: ${awsError.name || 'Unknown'}`);
-      this.logger.error(`Error code: ${awsError.code || 'N/A'}`);
+      // 자세한 오류 정보 로깅 (PHP 스타일)
       this.logger.error(`Error details: ${JSON.stringify(error, null, 2)}`);
-
-      if (awsError.name === 'CredentialsProviderError') {
-        this.logger.error(
-          'AWS credentials are invalid or not properly configured.',
-        );
-      } else if (awsError.name === 'MessageRejected') {
-        this.logger.error(
-          'Email message was rejected by AWS SES. Check if your email addresses are verified.',
-        );
-      } else if (awsError.name === 'ConfigurationSetDoesNotExist') {
-        this.logger.error('AWS SES configuration set does not exist.');
-      } else if (awsError.name === 'InvalidClientTokenId') {
-        this.logger.error(
-          'The AWS access key ID or security token included in the request is invalid. Check your AWS credentials.',
-        );
-      } else if (awsError.name === 'SignatureDoesNotMatch') {
-        this.logger.error(
-          'The request signature calculated does not match the signature provided. Check your AWS secret access key.',
-        );
-      } else if (awsError.name === 'InvalidParameterValue') {
-        this.logger.error(
-          'One of the parameters in your request is invalid. Check the email addresses.',
-        );
-      }
 
       return false;
     }
   }
 
   /**
-   * 고유한 인증 ID 생성
+   * 고유한 인증 ID 생성 (PHP 스타일)
    * @returns 생성된 인증 ID
    */
   private generateVerificationId(): string {
@@ -567,7 +531,7 @@ export class EmailService {
   }
 
   /**
-   * 6자리 인증 코드 생성
+   * 6자리 인증 코드 생성 (PHP 스타일)
    * @returns 6자리 인증 코드
    */
   private generateVerificationCode(): string {

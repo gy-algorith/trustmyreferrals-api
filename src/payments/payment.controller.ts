@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Get, Body, Param } from '@nestjs/common';
+import { Controller, Post, UseGuards, Get, Body, Param, Logger } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, StripeOnboardingStatus } from '../entities/user.entity';
@@ -26,14 +26,22 @@ export class PaymentController {
     private readonly transactionRepo: Repository<Transaction>,
     @InjectRepository(Settings)
     private readonly settingsRepo: Repository<Settings>,
-  ) {}
+  ) {
+    this.logger.log(`PaymentController initialized. allowedDomains=${JSON.stringify(this.allowedDomains)}`);
+  }
+
+  private readonly logger = new Logger(PaymentController.name);
 
   // 허용 도메인 리스트
   private readonly allowedDomains = [
     'http://localhost:3000',
     'http://3.80.115.250:3000',
     'http://192.168.0.204:3000',
-    'http://18.208.163.97:3000'
+    'http://18.208.163.97:3000',
+    'https://api-dev.trustmyreferrals.com',
+    'https://dev.trustmyreferrals.com',
+    'http://192.168.0.204:3000',
+    'http://192.168.0.229:4000'
   ];
 
   // Settings helper methods
@@ -175,9 +183,13 @@ export class PaymentController {
     // 도메인 검증 (successUrl, cancelUrl)
     const checkDomain = (url: string) => {
       try {
-        const { origin } = new URL(url);
-        return this.allowedDomains.includes(origin);
+        const u = new URL(url);
+        const origin = u.origin;
+        const isAllowed = this.allowedDomains.includes(origin);
+        this.logger.log(`add-fund checkDomain url=${url} origin=${origin} allowed=${isAllowed}`);
+        return isAllowed;
       } catch {
+        this.logger.warn(`add-fund checkDomain parse failed url=${url}`);
         return false;
       }
     };

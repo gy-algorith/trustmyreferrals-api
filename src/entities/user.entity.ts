@@ -86,6 +86,10 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   passwordResetExpires?: Date;
 
+  @ApiProperty({ description: 'Refresh 토큰 (JWT refresh용)' })
+  @Column({ nullable: true })
+  refreshToken?: string;
+
   @ApiProperty({ description: '추천인 ID (후보자 가입 시 사용)' })
   @Column({ nullable: true })
   @Index()
@@ -210,5 +214,22 @@ export class User extends BaseEntity {
 
   isPasswordResetTokenValid(): boolean {
     return this.passwordResetExpires ? new Date() < this.passwordResetExpires : false;
+  }
+
+  // Refresh 토큰 관련 헬퍼 메서드
+  getRefreshToken(): string | undefined {
+    return this.refreshToken;
+  }
+
+  setRefreshToken(token: string): void {
+    this.refreshToken = token;
+  }
+
+  clearRefreshToken(): void {
+    this.refreshToken = undefined;
+  }
+
+  hasValidRefreshToken(): boolean {
+    return !!this.refreshToken && this.refreshToken.trim() !== '';
   }
 }

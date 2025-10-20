@@ -87,6 +87,9 @@ export class AuthService {
     // Update last login time
     await this.usersService.update(user.id, { lastLoginAt: new Date() });
 
+    // Save refresh token to database for security
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
+
     return {
       success: true,
       data: {
@@ -316,29 +319,83 @@ export class AuthService {
       };
   }
 
+  /**
+   * 사용자 로그아웃 처리
+   * @param userId 사용자 ID
+   * @param refreshToken 리프레시 토큰 (선택사항)
+   */
+  async logout(userId: string, refreshToken?: string): Promise<ApiResponse<any>> {
+    try {
+      // DB에서 refresh 토큰 제거
+      await this.usersService.updateRefreshToken(userId, null);
+      
+      this.logger.log(`User ${userId} logged out successfully`);
+      
+      return {
+        success: true,
+        data: {
+          message: 'Logged out successfully'
+        }
+      };
+    } catch (error) {
+      this.logger.error(`Error during logout for user ${userId}:`, error);
+      throw new UnauthorizedException('Logout failed');
+    }
+  }
+
+  /**
+   * 리프레시 토큰을 사용하여 새 액세스 토큰과 리프레시 토큰을 발급
+   * @param refreshToken 리프레시 토큰
+   * @returns 새로운 인증 토큰과 사용자 정보
+   */
   async refreshToken(refreshToken: string): Promise<ApiResponse<any>> {
     try {
+      // 1. 리프레시 토큰 자체의 유효성 검증 (만료 여부, 시그니처 등)
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
       });
 
+      // 2. DB에서 사용자 조회
       const user = await this.usersService.findById(payload.sub);
       if (!user || !user.isActive()) {
         throw new UnauthorizedException('User not found or inactive.');
       }
 
-      // 사용자의 역할을 사용 (JWT는 단일 역할만 지원)
+      // 3. DB에 저장된 토큰과 일치하는지 확인
+      if (user.refreshToken !== refreshToken) {
+        // DB의 토큰과 일치하지 않으면, 탈취되었을 가능성이 있으므로 로그아웃 처리
+        await this.logout(user.id, null); // 기존 토큰 무효화
+        throw new UnauthorizedException('Invalid refresh token. Please log in again.');
+      }
+
+      // 4. 사용자의 역할을 사용 (JWT는 단일 역할만 지원)
       const primaryRole = user.role || UserRole.CANDIDATE;
-      const newPayload = { email: user.email, sub: user.id, role: primaryRole };
-      const newAccessToken = this.jwtService.sign(newPayload);
+      
+      // 5. 새로운 토큰 생성
+      const newAccessToken = this.jwtService.sign(
+        { email: user.email, sub: user.id, role: primaryRole },
+        { secret: this.configService.get('JWT_SECRET'), expiresIn: '15m' }
+      );
+
+      const newRefreshToken = this.jwtService.sign(
+        { email: user.email, sub: user.id, role: primaryRole },
+        { secret: this.configService.get('JWT_REFRESH_SECRET'), expiresIn: '7d' }
+      );
+
+      // 6. 새로 생성된 리프레시 토큰을 DB에 저장
+      await this.usersService.updateRefreshToken(user.id, newRefreshToken);
 
       return {
         success: true,
         data: {
           accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
         },
       };
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid refresh token.');
     }
   }

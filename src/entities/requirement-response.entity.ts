@@ -44,9 +44,6 @@ export class RequirementResponse extends BaseEntity {
   @JoinColumn({ name: 'referrerId' })
   referrer: User;
 
-  @Column({ length: 100 })
-  candidateOverview: string;
-
   @Column({ length: 1000 })
   whyThisCandidate: string;
 

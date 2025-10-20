@@ -121,7 +121,7 @@ export class ResumeController {
         }
 
         console.log(`✅ Access granted, fetching resume for candidate ${candidateId}`);
-        const structuredResume = await this.resumeService.getStructuredResume(candidateId);
+        const structuredResume = await this.resumeService.getStructuredResume(candidateId, referrerId);
 
         return {
             success: true,
@@ -297,88 +297,6 @@ export class ResumeController {
         return {
             success: true,
             data: section,
-        };
-    }
-
-    @Put('section/:id')
-    @Roles(UserRole.CANDIDATE)
-    @ApiOperation({
-        summary: 'Update Resume Section',
-        description: 'Candidate updates a specific resume section.',
-    })
-    @ApiParam({
-        name: 'id',
-        description: 'ID of the resume section to update',
-    })
-    @ApiBody({
-        schema: {
-            type: 'object',
-            properties: {
-                sectionData: {
-                    type: 'object',
-                    description: 'Section data to update',
-                },
-                sectionOrder: {
-                    type: 'number',
-                    description: 'New section order',
-                },
-            },
-        },
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'Resume section updated successfully.',
-    })
-    async updateResumeSection(
-        @Param('id') id: string,
-        @Body() updateSectionDto: {
-            sectionData?: Record<string, any>;
-            sectionOrder?: number;
-        },
-        @Request() req: any,
-    ) {
-        const updatedSection = await this.resumeService.updateResumeSection(
-            id,
-            updateSectionDto,
-        );
-
-        if (!updatedSection) {
-            return {
-                success: false,
-                data: null,
-                message: 'Resume section not found',
-            };
-        }
-
-        return {
-            success: true,
-            data: updatedSection,
-        };
-    }
-
-    @Delete('section/:id')
-    @Roles(UserRole.CANDIDATE)
-    @ApiOperation({
-        summary: 'Deactivate Resume Section',
-        description: 'Candidate deactivates a specific resume section.',
-    })
-    @ApiParam({
-        name: 'id',
-        description: 'ID of the resume section to deactivate',
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'Resume section deactivated successfully.',
-    })
-    async deactivateResumeSection(
-        @Param('id') id: string,
-        @Request() req: any,
-    ) {
-        const success = await this.resumeService.deactivateResumeSection(id);
-
-        return {
-            success,
-            message: success ? 'Resume section deactivated successfully' : 'Failed to deactivate resume section',
         };
     }
 

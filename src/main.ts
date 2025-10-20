@@ -104,10 +104,44 @@ async function bootstrap() {
     });
   });
 
-  // CORS 설정
+  // CORS 설정 (화이트리스트/패턴 기반, credentials 안전 처리)
+  const rawCorsOrigins = configService.get<string>('CORS_ORIGIN', '');
+  const allowedOrigins = rawCorsOrigins
+    .split(',')
+    .map((o) => o.trim())
+    .filter((o) => o.length > 0);
+  if (allowedOrigins.length === 0) {
+    allowedOrigins.push('*');
+  }
+
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', '*'),
+    origin: (origin, callback) => {
+      // 서버-서버 호출 등 Origin이 없는 경우 허용
+      if (!origin) return callback(null, true);
+
+      const isAllowed = allowedOrigins.some((allowed) => {
+        if (allowed === '*') return true; // reflect origin (credentials OK via function form)
+        if (allowed.startsWith('*.')) {
+          const suffix = allowed.slice(1); // e.g. .example.com
+          return origin.endsWith(suffix);
+        }
+        return origin === allowed;
+      });
+
+      return isAllowed
+        ? callback(null, true)
+        : callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
+    optionsSuccessStatus: 204,
   });
 
   // 글로벌 프리픽스 설정

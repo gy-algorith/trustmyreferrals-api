@@ -68,6 +68,17 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User logout' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async logout(@CurrentUser() user: CurrentUserType) {
+    return this.authService.logout(user.id);
+  }
+
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Forgot password' })
@@ -209,7 +220,11 @@ export class AuthController {
     // candidateCap과 purchasedCandidates는 포함 (referrer에게 중요한 정보)
     return { 
       success: true, 
-      data: safeUserData 
+      data: {
+        ...safeUserData,
+        stripeAccountId: (user as any).stripeAccountId ?? null,
+        stripeOnboardingStatus: (user as any).stripeOnboardingStatus ?? null,
+      }
     };
   }
 }

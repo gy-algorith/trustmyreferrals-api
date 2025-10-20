@@ -64,8 +64,10 @@ export class ResumeService {
 
   /**
    * 사용자의 이력서를 구조화된 형태로 반환 (공통 로직)
+   * @param userId 사용자 ID
+   * @param referrerId referrer ID (선택사항, validation 정보 포함 시 필요)
    */
-  async getStructuredResume(userId: string) {
+  async getStructuredResume(userId: string, referrerId?: string) {
     const sections = await this.getUserResumeSections(userId);
 
     // Structure by sections
@@ -77,55 +79,67 @@ export class ResumeService {
       awards: []
     };
 
-    sections.forEach(section => {
+    // 각 섹션에 대해 validation 정보를 포함하여 처리
+    for (const section of sections) {
+      let validationInfo = null;
+      
+      // referrerId가 제공된 경우 validation 정보 조회
+      if (referrerId) {
+        const validation = await this.resumeValidationRepository.findOne({
+          where: { 
+            resumeId: section.id, 
+            referrerId: referrerId,
+            isActive: true 
+          }
+        });
+        
+        if (validation) {
+          validationInfo = {
+            id: validation.id,
+            text: validation.text,
+            createdAt: validation.createdAt,
+            isActive: validation.isActive
+          };
+        }
+      }
+
+      const sectionWithValidation = {
+        id: section.id,
+        hasValidation: !!validationInfo,
+        validation: validationInfo,
+        ...this.getSectionData(section)
+      };
+
       switch (section.sectionType) {
         case ResumeSectionType.PROFESSIONAL_SUMMARY:
-          structuredResume.professionalSummary = {
-            id: section.id,
-            summary: section.sectionData.summary
-          };
+          structuredResume.professionalSummary = sectionWithValidation;
           break;
         case ResumeSectionType.WORK_EXPERIENCE:
           structuredResume.workExperience.push({
-            id: section.id,
-            title: section.sectionData.title,
-            company: section.sectionData.company,
-            dateRange: section.sectionData.dateRange,
-            description: section.sectionData.description,
+            ...sectionWithValidation,
             order: section.sectionOrder
           });
           break;
         case ResumeSectionType.EDUCATION:
           structuredResume.education.push({
-            id: section.id,
-            degreeType: section.sectionData.degreeType,
-            fieldOfStudy: section.sectionData.fieldOfStudy,
-            institution: section.sectionData.institution,
-            startYear: section.sectionData.startYear,
-            endYear: section.sectionData.endYear,
-            description: section.sectionData.description,
+            ...sectionWithValidation,
             order: section.sectionOrder
           });
           break;
         case ResumeSectionType.SKILLS:
           structuredResume.skills.push({
-            id: section.id,
-            skillName: section.sectionData.skillName,
+            ...sectionWithValidation,
             order: section.sectionOrder
           });
           break;
         case ResumeSectionType.AWARDS_AND_CERTIFICATIONS:
           structuredResume.awards.push({
-            id: section.id,
-            awardName: section.sectionData.awardName,
-            issuingOrganization: section.sectionData.issuingOrganization,
-            dateAwarded: section.sectionData.dateAwarded,
-            description: section.sectionData.description,
+            ...sectionWithValidation,
             order: section.sectionOrder
           });
           break;
       }
-    });
+    }
 
     // Sort by order
     structuredResume.workExperience.sort((a, b) => a.order - b.order);
@@ -134,6 +148,43 @@ export class ResumeService {
     structuredResume.awards.sort((a, b) => a.order - b.order);
 
     return structuredResume;
+  }
+
+  /**
+   * 섹션 데이터를 추출하는 헬퍼 메서드
+   */
+  private getSectionData(section: Resume): Record<string, any> {
+    switch (section.sectionType) {
+      case ResumeSectionType.PROFESSIONAL_SUMMARY:
+        return { summary: section.sectionData.summary };
+      case ResumeSectionType.WORK_EXPERIENCE:
+        return {
+          title: section.sectionData.title,
+          company: section.sectionData.company,
+          dateRange: section.sectionData.dateRange,
+          description: section.sectionData.description
+        };
+      case ResumeSectionType.EDUCATION:
+        return {
+          degreeType: section.sectionData.degreeType,
+          fieldOfStudy: section.sectionData.fieldOfStudy,
+          institution: section.sectionData.institution,
+          startYear: section.sectionData.startYear,
+          endYear: section.sectionData.endYear,
+          description: section.sectionData.description
+        };
+      case ResumeSectionType.SKILLS:
+        return { skillName: section.sectionData.skillName };
+      case ResumeSectionType.AWARDS_AND_CERTIFICATIONS:
+        return {
+          awardName: section.sectionData.awardName,
+          issuingOrganization: section.sectionData.issuingOrganization,
+          dateAwarded: section.sectionData.dateAwarded,
+          description: section.sectionData.description
+        };
+      default:
+        return {};
+    }
   }
 
   /**
@@ -214,14 +265,15 @@ export class ResumeService {
   }): Promise<ResumeValidation> {
     // Resume 엔티티를 먼저 찾아야 합니다
     const resume = await this.resumeRepository.findOne({
-      where: { id: data.resumeId },
+      where: { id: data.resumeId, isActive: true },
     });
 
     if (!resume) {
-      throw new NotFoundException(`Resume section with ID ${data.resumeId} not found`);
+      throw new NotFoundException(`Resume section with ID ${data.resumeId} not found or inactive`);
     }
 
     const validation = this.resumeValidationRepository.create({
+      resumeId: data.resumeId, // resumeId 명시적으로 설정
       resume: resume,
       referrerId: data.referrerId,
       text: data.suggestionText,
@@ -237,19 +289,27 @@ export class ResumeService {
    * Resume section의 validations 조회
    */
   async getResumeValidations(resumeId: string): Promise<ResumeValidation[]> {
-    // Resume 엔티티를 먼저 찾아야 합니다
+    // Resume 엔티티를 먼저 찾아야 합니다 (활성 상태인 것만)
     const resume = await this.resumeRepository.findOne({
-      where: { id: resumeId },
+      where: { id: resumeId, isActive: true },
     });
 
     if (!resume) {
+      this.logger.log(`Resume section not found or inactive: ${resumeId}`);
       return [];
     }
 
-    return this.resumeValidationRepository.find({
-      where: { resume: resume, isActive: true },
+    // ResumeValidation을 resumeId로 직접 조회
+    const validations = await this.resumeValidationRepository.find({
+      where: { 
+        resumeId: resumeId, // resumeId 컬럼으로 직접 조회
+        isActive: true 
+      },
       order: { createdAt: 'DESC' },
     });
+
+    this.logger.log(`Found ${validations.length} validations for resume: ${resumeId}`);
+    return validations;
   }
 
   /**
@@ -389,7 +449,9 @@ export class ResumeService {
     }>;
   }> {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const modelId = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash-lite';
     this.logger.log(`GEMINI_API_KEY length: ${apiKey ? apiKey.length : 0}`);
+    this.logger.log(`Using Gemini model: ${modelId} (v1beta)`);
     
     if (!apiKey) {
       this.logger.error('GEMINI_API_KEY not found in environment variables');
@@ -460,7 +522,7 @@ export class ResumeService {
     };
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {

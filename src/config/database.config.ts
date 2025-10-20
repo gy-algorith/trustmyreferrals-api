@@ -7,6 +7,8 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
+    const isSSL = this.configService.get('NODE_ENV') !== 'local';
+    
     return {
       type: 'postgres',
       host: this.configService.get('DB_HOST', 'localhost'),
@@ -20,7 +22,9 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
       synchronize: false, // Disable auto-sync to prevent conflicts
       // 로깅 설정: 쿼리는 비활성화, 에러만 로깅
       logging: this.configService.get('NODE_ENV') === 'development' ? ['error', 'warn'] : false,
-      ssl: this.configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+      // 핵심: SSL 강제
+      ssl: isSSL,
+      extra: isSSL ? { ssl: { rejectUnauthorized: false } } : undefined, // 데모용
       // TypeORM 캐시 비활성화 (메타데이터 리프레시 강제)
       cache: false,
     };

@@ -19,11 +19,19 @@ export class LoggingMiddleware implements NestMiddleware {
     (req as any).requestId = requestId;
     res.setHeader('X-Request-Id', requestId);
 
+    // Skip logging for health checks and ELB health checker
+    const userAgent = req.get('user-agent') || '';
+    const isHealthEndpoint = originalUrl.startsWith('/api/v1/health');
+    const isElbHealthChecker = userAgent.includes('ELB-HealthChecker');
+    if (isHealthEndpoint || isElbHealthChecker) {
+      return next();
+    }
+
     // 요청 시작 로깅 - 간소화
     this.loggingService.info(`🚀 ${method} ${originalUrl}`, {
       requestId,
       ip,
-      userAgent: req.get('user-agent') || '',
+      userAgent,
     });
 
     // 메트릭 기록

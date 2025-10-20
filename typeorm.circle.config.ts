@@ -8,16 +8,19 @@ const isSSL = process.env.NODE_ENV !== 'local';
 export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 5432,
+  port: parseInt(process.env.DB_PORT || '5432', 10),
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
   database: process.env.DB_DATABASE || 'trust_united',
   schema: process.env.DB_SCHEMA || 'public',
   entities: [__dirname + '/src/**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/src/database/migrations/*{.ts,.js}'],
-  synchronize: false, // Disable auto-sync after manual schema creation
+  migrations: [
+    __dirname + '/src/database/migrations/1756266000000-CreateReferrerCircleSimple{.ts,.js}',
+  ],
+  synchronize: false,
   logging: true,
-  // 핵심: SSL 강제
   ssl: isSSL,
-  extra: isSSL ? { ssl: { rejectUnauthorized: false } } : undefined, // 데모용
+  extra: isSSL ? { ssl: { rejectUnauthorized: false } } : undefined,
 });
+
+

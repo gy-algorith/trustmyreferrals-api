@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Deck, SourceType } from '../entities/deck.entity';
-import { Resume, ResumeSectionType } from '../entities/resume.entity';
+import { Resume } from '../entities/resume.entity';
 import { RequirementResponse } from '../entities/requirement-response.entity';
 
 @Injectable()
@@ -47,7 +47,7 @@ export class DeckService {
   /**
    * 추천인의 deck 조회 (간소화된 정보)
    */
-  async getDeckSummaryByReferrer(referrerId: string): Promise<any[]> {
+  async getDeckSummaryByReferrer(referrerId: string, excludeRequirementId?: string): Promise<any[]> {
     try {
       this.logger.log(`Fetching deck summary for referrer: ${referrerId}`);
       
@@ -66,6 +66,23 @@ export class DeckService {
       }
 
       const deckSummaries = [];
+
+      // 제외 대상 후보자 목록을 미리 수집 (해당 requirement의 기존 응답 후보자들)
+      let excludedCandidateIds = new Set<string>();
+      if (excludeRequirementId) {
+        this.logger.log(`[Exclude] Requirement filter enabled: ${excludeRequirementId}`);
+        const existing = await this.requirementResponseRepository.find({
+          where: { requirementId: excludeRequirementId },
+          select: { candidateId: true } as any,
+        });
+        excludedCandidateIds = new Set(existing.map(e => e.candidateId));
+        this.logger.log(
+          `[Exclude] Found ${existing.length} existing responses for requirement ${excludeRequirementId}. ` +
+          `Excluded candidateIds: ${existing.map(e => e.candidateId).join(', ') || '(none)'}`
+        );
+      } else {
+        this.logger.log('[Exclude] No requirement filter provided. Returning full deck list.');
+      }
       
       for (const deck of decks) {
         try {
@@ -76,19 +93,27 @@ export class DeckService {
             continue;
           }
 
+          const isExisting = !!(excludeRequirementId && excludedCandidateIds.has(deck.candidate.id));
+          if (isExisting) {
+            this.logger.log(
+              `[Flag] Marking deck ${deck.id} (candidate ${deck.candidate.id}) as existing for requirement ${excludeRequirementId}`
+            );
+          }
+
           const inDecks = await this.getCandidateDeckCount(deck.candidate.id);
-          const skills = await this.getUserSkills(deck.candidate.id);
+          const resume = await this.getUserResume(deck.candidate.id);
           
           deckSummaries.push({
             id: deck.id,
             candidateId: deck.candidate.id, // candidate의 userId 추가
             name: `${deck.candidate.firstName || ''} ${deck.candidate.lastName || ''}`.trim() || 'Unknown',
-            skills: skills,
+            resume,
             inDecks,
             dateAdded: deck.createdAt,
             isPremium: deck.candidate.subscriptionPurchased === true,
             email: deck.candidate.email,
-            status: deck.candidate.status
+            status: deck.candidate.status,
+            isExisting,
           });
         } catch (error) {
           this.logger.error(`Error processing deck ${deck.id}:`, error);
@@ -126,26 +151,31 @@ export class DeckService {
     });
   }
 
+  
+
   /**
-   * 사용자의 skills 가져오기
+   * 사용자의 전체 resume 섹션을 섹션타입별 배열로 구성해 반환
    */
-  async getUserSkills(userId: string): Promise<string[]> {
+  async getUserResume(userId: string): Promise<Record<string, any[]>> {
     try {
-      const skills = await this.resumeRepository.find({
+      const sections = await this.resumeRepository.find({
         where: {
           userId: userId,
-          sectionType: ResumeSectionType.SKILLS,
           isActive: true
         },
-        order: { sectionOrder: 'ASC' }
+        order: { sectionType: 'ASC', sectionOrder: 'ASC' }
       });
 
-      return skills
-        .map(skill => skill.sectionData?.skillName)
-        .filter(skillName => skillName && skillName.trim() !== '');
+      const resume: Record<string, any[]> = {};
+      for (const s of sections) {
+        const key = s.sectionType;
+        if (!resume[key]) resume[key] = [];
+        resume[key].push(s.sectionData);
+      }
+      return resume;
     } catch (error) {
-      this.logger.error(`Error fetching skills for user ${userId}:`, error);
-      return [];
+      this.logger.error(`Error fetching resume for user ${userId}:`, error);
+      return {};
     }
   }
 

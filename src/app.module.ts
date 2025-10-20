@@ -18,6 +18,7 @@ import { UserUpdatesModule } from './user-updates/user-updates.module';
 import { DeckModule } from './deck/deck.module';
 import { ResumeModule } from './resume/resume.module';
 import { CandidateInterestModule } from './candidate-interest/candidate-interest.module';
+import { CircleModule } from './circle/circle.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -74,6 +75,7 @@ import { LoggingMiddleware } from './common/middlewares/logging.middleware';
     DeckModule,
     ResumeModule,
     CandidateInterestModule,
+    CircleModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
