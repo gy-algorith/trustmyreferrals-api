@@ -207,6 +207,18 @@ export class RequirementResponseService {
       }
     }
 
+    // Preload deck counts per candidate (how many deck rows include the candidate) to avoid N+1
+    let deckCountMap = new Map<string, number>();
+    if (candidateIds.length > 0) {
+      const deckRows = await this.deckRepository.createQueryBuilder('d')
+        .select('d.candidateId', 'candidateId')
+        .addSelect('COUNT(*)', 'cnt')
+        .where('d.candidateId IN (:...candidateIds)', { candidateIds })
+        .groupBy('d.candidateId')
+        .getRawMany<{ candidateId: string; cnt: string }>();
+      deckRows.forEach(r => deckCountMap.set(r.candidateId, Number(r.cnt)));
+    }
+
     // Compute scores per response
     const scored = allResponses.map((r) => {
       const referrerId = r.referrerId;
@@ -239,6 +251,7 @@ export class RequirementResponseService {
           id: c.id,
           firstName: c.firstName,
           lastName: c.lastName,
+          lastLoginAt: c.lastLoginAt,
         };
       }
       if (r.referrer && typeof r.referrer === 'object') {
@@ -247,8 +260,12 @@ export class RequirementResponseService {
           id: f.id,
           firstName: f.firstName,
           lastName: f.lastName,
+          lastLoginAt: f.lastLoginAt,
         };
       }
+
+      // 후보자가 몇 개의 deck row에 포함되는지 (사전 로딩 Map 사용)
+      const inDeckCount = deckCountMap.get(r.candidateId) || 0;
 
       // Attach detailed breakdown for testers
       (r as any).scoreDetails = {
@@ -278,6 +295,8 @@ export class RequirementResponseService {
         total: Number(rawTotal.toFixed(2)),
         cappedTotal: scoreNumber,
       };
+
+      (r as any).inDeckCount = inDeckCount;
       return r as any;
     });
 

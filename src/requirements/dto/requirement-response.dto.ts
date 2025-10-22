@@ -43,14 +43,14 @@ export class RequirementResponseDto {
 
   @ApiProperty({ 
     description: 'Candidate minimal info',
-    example: { id: 'uuid', firstName: 'John', lastName: 'Doe' }
+    example: { id: 'uuid', firstName: 'John', lastName: 'Doe', lastLoginAt: '2025-10-01T12:34:56.000Z' }
   })
   @Expose()
   candidate?: any;
 
   @ApiProperty({ 
     description: 'Referrer minimal info',
-    example: { id: 'uuid', firstName: 'Jane', lastName: 'Smith' }
+    example: { id: 'uuid', firstName: 'Jane', lastName: 'Smith', lastLoginAt: '2025-10-02T08:00:00.000Z' }
   })
   @Expose()
   referrer?: any;
@@ -77,4 +77,8 @@ export class RequirementResponseDto {
   })
   @Expose()
   scoreDetails?: any;
+
+  @ApiProperty({ description: 'Number of deck rows that include this candidate', example: 3 })
+  @Expose()
+  inDeckCount?: number;
 }

@@ -250,7 +250,8 @@ export class SubscriptionsService {
 
     try {
       // Settings에서 return URL 가져오기
-      const returnUrl = await this.getFrontendSetting('frontend_base_url', 'http://localhost:3000');
+      const frontendUrl = await this.getFrontendSetting('frontend_base_url');
+      const returnUrl = `${frontendUrl}en/my-subscription`;
       
       const portalSession = await this.paymentService.createCustomerPortalSession({
         customerId: user.stripeCustomerId,
